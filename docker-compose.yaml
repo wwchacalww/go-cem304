@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  app-cem:
+    build: .
+    container_name: go-app-cem304
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/go/src/
