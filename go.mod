@@ -4,6 +4,8 @@ go 1.20
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
+	github.com/go-chi/chi/v5 v5.0.8
+	github.com/go-chi/render v1.0.2
 	github.com/golang/mock v1.6.0
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/satori/go.uuid v1.2.0
@@ -11,6 +13,8 @@ require (
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/crypto v0.5.0
 )
+
+require github.com/ajg/form v1.5.1 // indirect
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
