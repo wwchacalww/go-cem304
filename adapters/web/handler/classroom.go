@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"wwchacalww/go-cem304/domain/repository"
+	"wwchacalww/go-cem304/domain/utils"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -20,6 +21,7 @@ func MakeClassroomHandlers(r *chi.Mux, repo repository.ClassroomRepositoryInterf
 
 	r.Route("/classrooms", func(r chi.Router) {
 		r.Post("/", handler.Store)
+		r.Post("/import", handler.Import)
 		r.Get("/{id}", handler.GetClassroom)
 		r.Get("/search", handler.FindByName)
 		r.Get("/list", handler.List)
@@ -153,6 +155,44 @@ func (c *ClassroomHandler) ANNE(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = json.NewEncoder(w).Encode(class)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (c *ClassroomHandler) Import(w http.ResponseWriter, r *http.Request) {
+	f, fh, err := r.FormFile("file")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	ct := fh.Header.Get("Content-Type")
+	if ct != "text/csv" {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError("File type invalid"))
+		return
+	}
+	defer f.Close()
+
+	list, err := utils.CsvToClassrooms(f)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	result, err := c.Repo.AddMass(list)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(result)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))

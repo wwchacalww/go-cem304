@@ -89,3 +89,26 @@ func (repo *ClassroomRepository) ANNE(id, anne string) (model.ClassroomInterface
 
 	return result, nil
 }
+
+func (repo *ClassroomRepository) AddMass(mass []repository.ClassroomInput) ([]model.ClassroomInterface, error) {
+	var classrooms []model.ClassroomInterface
+	for _, input := range mass {
+		class := model.NewClassroom()
+		class.Name = input.Name
+		class.Level = input.Level
+		class.Grade = input.Grade
+		class.Shift = input.Shift
+		class.Description = input.Description
+		class.ANNE = input.ANNE
+		class.Year = input.Year
+
+		classrooms = append(classrooms, class)
+	}
+
+	result, err := repo.Persistence.AddMass(classrooms)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

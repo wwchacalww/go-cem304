@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"log"
+	"time"
 	"wwchacalww/go-cem304/domain/model"
 )
 
@@ -234,4 +235,45 @@ func (c *ClassroomDB) ANNE(id, anne string) (model.ClassroomInterface, error) {
 		return nil, err
 	}
 	return &class, nil
+}
+
+func (c *ClassroomDB) AddMass(mass []model.ClassroomInterface) ([]model.ClassroomInterface, error) {
+	var query string
+	query = `INSERT INTO classrooms (
+		id,
+		name,
+		level,
+		grade,
+		shift,
+		description,
+		ANNE,
+		year,
+		status,
+		created_at,
+		updated_at
+	) values `
+	for i, c := range mass {
+		if i == 0 {
+			query = query + "('" + c.GetID() + "',"
+		} else {
+			query = query + ", ('" + c.GetID() + "',"
+		}
+		query = query + "'" + c.GetName() + "',"
+		query = query + "'" + c.GetLevel() + "',"
+		query = query + "'" + c.GetGrade() + "',"
+		query = query + "'" + c.GetShift() + "',"
+		query = query + "'" + c.GetDescription() + "',"
+		query = query + "'" + c.GetANNE() + "',"
+		query = query + "'" + c.GetYear() + "',"
+		query = query + "true,"
+		query = query + "'" + string(c.GetCreatedAt().Format(time.RFC3339)) + "',"
+		query = query + "'" + string(c.GetUpdatedAt().Format(time.RFC3339)) + "') "
+	}
+
+	_, err := c.db.Exec(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return mass, nil
 }
