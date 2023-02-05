@@ -21,7 +21,7 @@ func (repo *ClassroomRepository) Create(input repository.ClassroomInput) (model.
 	class.Shift = input.Shift
 	class.Description = input.Description
 	class.ANNE = input.ANNE
-	class.Year = input.Level
+	class.Year = input.Year
 
 	_, err := class.IsValid()
 	if err != nil {
@@ -73,7 +73,7 @@ func (repo *ClassroomRepository) Enable(id string) (model.ClassroomInterface, er
 }
 
 func (repo *ClassroomRepository) Disable(id string) (model.ClassroomInterface, error) {
-	class, err := repo.Persistence.Enable(id)
+	class, err := repo.Persistence.Disable(id)
 	if err != nil {
 		return nil, err
 	}

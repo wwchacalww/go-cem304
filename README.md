@@ -21,12 +21,21 @@ Repository for studying and practicing GOLANG applied in a school management sys
  - [X] Create adapter http
  - [X] Install and setting [chi](https://go-chi.io/#/) 
  - [X] Create jsonError to manipulate messages errors
- - [X] Create handler server
+ - [X] Create User handler server
    - [X] Create user
    - [ ] Get user
    - [X] List users
    - [ ] Activate user
    - [ ] Desactivate user
+ - [ ] Create Classroom handler server
+   - [X] Create Classroom
+   - [X] Get by id Classroom
+   - [X] Get by name Classrooms
+   - [X] List Classrooms
+   - [X] Update ANNE Classroom
+   - [X] Activate Classroom
+   - [X] Desactivate Classroom
+   - [ ] Import file csv and registry Classrooms
 
 ## Domains - Classrooms
  - [X] Create entity

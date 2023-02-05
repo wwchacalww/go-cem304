@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"log"
 	"wwchacalww/go-cem304/domain/model"
 )
 
@@ -81,7 +82,7 @@ func (c *ClassroomDB) FindById(id string) (model.ClassroomInterface, error) {
 
 func (c *ClassroomDB) FindByName(name string) ([]model.ClassroomInterface, error) {
 	var classrooms []model.ClassroomInterface
-	rows, err := c.db.Query("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at from classrooms where name like $1", "%"+name+"%")
+	rows, err := c.db.Query("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at from classrooms where name like $1 ORDER BY name ASC", "%"+name+"%")
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +113,7 @@ func (c *ClassroomDB) FindByName(name string) ([]model.ClassroomInterface, error
 
 func (c *ClassroomDB) List(year string) ([]model.ClassroomInterface, error) {
 	var classrooms []model.ClassroomInterface
-	rows, err := c.db.Query("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at from classrooms where year like $1", year)
+	rows, err := c.db.Query("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at from classrooms where year like $1 ORDER BY name ASC", year)
 	if err != nil {
 		return nil, err
 	}
@@ -177,6 +178,7 @@ func (c *ClassroomDB) Disable(id string) (model.ClassroomInterface, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Println("teste")
 	var class model.Classroom
 	stmt, err := c.db.Prepare("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at FROM classrooms where id=$1")
 	if err != nil {

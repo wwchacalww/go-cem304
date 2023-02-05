@@ -18,7 +18,7 @@ type ClassroomRepositoryInterface interface {
 	Create(input ClassroomInput) (model.ClassroomInterface, error)
 	FindById(id string) (model.ClassroomInterface, error)
 	FindByName(name string) ([]model.ClassroomInterface, error)
-	list(year string) ([]model.ClassroomInterface, error)
+	List(year string) ([]model.ClassroomInterface, error)
 	Enable(id string) (model.ClassroomInterface, error)
 	Disable(id string) (model.ClassroomInterface, error)
 	ANNE(id, anne string) (model.ClassroomInterface, error)
