@@ -22,6 +22,7 @@ type ClassroomRepositoryInterface interface {
 	Enable(id string) (model.ClassroomInterface, error)
 	Disable(id string) (model.ClassroomInterface, error)
 	ANNE(id, anne string) (model.ClassroomInterface, error)
+	AddMass(mass []ClassroomInput) ([]model.ClassroomInterface, error)
 }
 
 type ClassroomPersistence interface {
@@ -32,4 +33,5 @@ type ClassroomPersistence interface {
 	Enable(id string) (model.ClassroomInterface, error)
 	Disable(id string) (model.ClassroomInterface, error)
 	ANNE(id, anne string) (model.ClassroomInterface, error)
+	AddMass(mass []model.ClassroomInterface) ([]model.ClassroomInterface, error)
 }

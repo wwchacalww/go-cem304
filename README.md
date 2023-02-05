@@ -27,7 +27,7 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [X] List users
    - [ ] Activate user
    - [ ] Desactivate user
- - [ ] Create Classroom handler server
+ - [X] Create Classroom handler server
    - [X] Create Classroom
    - [X] Get by id Classroom
    - [X] Get by name Classrooms
@@ -35,7 +35,7 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [X] Update ANNE Classroom
    - [X] Activate Classroom
    - [X] Desactivate Classroom
-   - [ ] Import file csv and registry Classrooms
+   - [X] Import file csv and registry Classrooms
 
 ## Domains - Classrooms
  - [X] Create entity
