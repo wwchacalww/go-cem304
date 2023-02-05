@@ -8,6 +8,7 @@ require (
 	github.com/go-chi/render v1.0.2
 	github.com/golang/mock v1.6.0
 	github.com/mattn/go-sqlite3 v1.14.16
+	github.com/rs/cors v1.8.3
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1

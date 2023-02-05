@@ -17,13 +17,21 @@ Repository for studying and practicing GOLANG applied in a school management sys
  - [X] Create cli with cobra-cli
 
 ## WebServer
- - [ ] Create and setting command line for webserver
- - [ ] Create adapter http
- - [ ] Install and setting [chi](https://go-chi.io/#/) 
- - [ ] Create jsonError to manipulate messages errors
- - [ ] Create handler server
-   - [ ] Create user
+ - [X] Create and setting command line for webserver
+ - [X] Create adapter http
+ - [X] Install and setting [chi](https://go-chi.io/#/) 
+ - [X] Create jsonError to manipulate messages errors
+ - [X] Create handler server
+   - [X] Create user
    - [ ] Get user
-   - [ ] List users
+   - [X] List users
    - [ ] Activate user
    - [ ] Desactivate user
+
+## Domains - Classrooms
+ - [X] Create entity
+ - [X] Test entity classroom
+ - [X] Create service classroom
+ - [X] Create persistence db and test
+ - [X] Create table on postgresql
+ - [ ] Create cli with cobra-cli
