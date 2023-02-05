@@ -19,3 +19,18 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 	expired_at TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS classrooms (
+	id uuid DEFAULT uuid_generate_v4 (),
+	name VARCHAR NOT NULL,
+	level VARCHAR NOT NULL,
+	grade VARCHAR NOT NULL,
+	shift VARCHAR NOT NULL,
+	description VARCHAR NULL,
+	ANNE VARCHAR NULL,
+	year VARCHAR NOT NULL,
+	status bool NOT NULL DEFAULT true,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	PRIMARY KEY (id)
+);
