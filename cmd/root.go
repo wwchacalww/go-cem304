@@ -8,6 +8,7 @@ import (
 	"os"
 	"wwchacalww/go-cem304/adapters/db"
 	"wwchacalww/go-cem304/application"
+	"wwchacalww/go-cem304/usecase/repository"
 
 	_ "github.com/lib/pq"
 
@@ -17,7 +18,9 @@ import (
 var connStr = "postgres://postgres:postgres@db:5432/cem304?sslmode=disable"
 var drv, _ = sql.Open("postgres", connStr)
 var userDb = db.NewUserDB(drv)
+var classDb = db.NewClassroomDB(drv)
 var userService = application.UserService{Persistence: userDb}
+var classroomRepository = repository.ClassroomRepository{Persistence: classDb}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{

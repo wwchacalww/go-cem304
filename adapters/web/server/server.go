@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"wwchacalww/go-cem304/adapters/web/handler"
 	"wwchacalww/go-cem304/application"
+	"wwchacalww/go-cem304/domain/repository"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -11,7 +12,8 @@ import (
 )
 
 type WebServer struct {
-	UsersService application.UserServiceInterface
+	UsersService        application.UserServiceInterface
+	ClassroomRepository repository.ClassroomRepositoryInterface
 }
 
 func MakeNewWebServer() *WebServer {
@@ -33,6 +35,7 @@ func (w WebServer) Server() {
 	r.Use(c.Handler)
 	r.Use(middleware.Logger)
 	handler.MakeUserHandlers(r, w.UsersService)
+	handler.MakeClassroomHandlers(r, w.ClassroomRepository)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World!"))
 	})

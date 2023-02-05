@@ -23,7 +23,6 @@ func MakeUserHandlers(r *chi.Mux, service application.UserServiceInterface) {
 		r.Post("/", handler.Store)
 		r.Get("/", handler.GetList)
 	})
-
 }
 
 func (u *UserHandler) GetList(w http.ResponseWriter, r *http.Request) {
