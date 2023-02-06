@@ -294,43 +294,79 @@ func (std *StudentDB) ANNE(id, anne string) (model.StudentInterface, error) {
 	return &student, nil
 }
 
-func (std *StudentDB) AddMass(mass []model.StudentInterface) ([]model.StudentInterface, error) {
-	var query string
-	query = `INSERT INTO Students (
-		id,
-		name,
-		level,
-		grade,
-		shift,
-		description,
-		ANNE,
-		year,
-		status,
-		created_at,
-		updated_at
-	) values `
-	for i, c := range mass {
-		if i == 0 {
-			query = query + "('" + std.GetID() + "',"
-		} else {
-			query = query + ", ('" + std.GetID() + "',"
-		}
-		query = query + "'" + std.GetName() + "',"
-		query = query + "'" + std.GetLevel() + "',"
-		query = query + "'" + std.GetGrade() + "',"
-		query = query + "'" + std.GetShift() + "',"
-		query = query + "'" + std.GetDescription() + "',"
-		query = query + "'" + std.GetANNE() + "',"
-		query = query + "'" + std.GetYear() + "',"
-		query = query + "true,"
-		query = query + "'" + string(std.GetCreatedAt().Format(time.RFC3339)) + "',"
-		query = query + "'" + string(std.GetUpdatedAt().Format(time.RFC3339)) + "') "
-	}
-
-	_, err := std.db.Exec(query)
+func (std *StudentDB) AddMass(mass []repository.StudentInput) ([]model.StudentInterface, error) {
+	var class model.Classroom
+	classroom_id := mass[0].ClassroomID
+	stmt, err := std.db.Prepare("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at from classrooms where id=$1")
 	if err != nil {
 		return nil, err
 	}
 
-	return mass, nil
+	var students []model.StudentInterface
+	err = stmt.QueryRow(classroom_id).Scan(
+		&class.ID,
+		&class.Name,
+		&class.Level,
+		&class.Grade,
+		&class.Shift,
+		&class.Description,
+		&class.ANNE,
+		&class.Year,
+		&class.Status,
+		&class.CreatedAt,
+		&class.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	stmt.Close()
+
+	var query string
+	query = `INSERT INTO Students (
+		id,
+		name,
+		birth_day,
+		anne,
+		note,
+		ieducar,
+		educa_df,
+		classroom_id,
+		status,
+		created_at,
+		updated_at
+	) values `
+	for i, s := range mass {
+		study, err := model.NewStudent(s.Name, s.BirthDay, s.Educar)
+		if err != nil {
+			return nil, err
+		}
+		study.ANNE = s.ANNE
+		study.Note = s.Note
+		study.Educar = s.Educar
+		study.EducaDF = s.EducaDF
+		study.Classroom = &class
+		students = append(students, study)
+		if i == 0 {
+			query = query + "('" + study.GetID() + "',"
+		} else {
+			query = query + ", ('" + study.GetID() + "',"
+		}
+		query = query + "'" + study.GetName() + "',"
+		query = query + "'" + string(study.GetBirthDay().Format(time.RFC3339)) + "',"
+		query = query + "'" + study.GetANNE() + "',"
+		query = query + "'" + study.GetNote() + "',"
+		query = query + string(study.GetEducar()) + ","
+		query = query + "'" + study.GetEducaDF() + "',"
+		query = query + "'" + classroom_id + "',"
+		query = query + "true,"
+		query = query + "'" + string(study.GetCreatedAt().Format(time.RFC3339)) + "',"
+		query = query + "'" + string(study.GetUpdatedAt().Format(time.RFC3339)) + "') "
+	}
+
+	_, err = std.db.Exec(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return students, nil
 }
