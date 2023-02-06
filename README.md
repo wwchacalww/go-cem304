@@ -36,11 +36,26 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [X] Activate Classroom
    - [X] Desactivate Classroom
    - [X] Import file csv and registry Classrooms
-
+- [ ] Create Students handler server
+   - [ ] Create Students
+   - [ ] Get by id Students
+   - [ ] Get by name Students
+   - [ ] List Students
+   - [ ] Update ANNE Students
+   - [ ] Activate Students
+   - [ ] Desactivate Students
+   - [ ] Import file csv and registry Classrooms
 ## Domains - Classrooms
  - [X] Create entity
  - [X] Test entity classroom
- - [X] Create service classroom
+ - [X] Create repository classroom
  - [X] Create persistence db and test
  - [X] Create table on postgresql
  - [ ] Create cli with cobra-cli
+
+## Domains - Students
+ - [X] Create entity
+ - [X] Test entity classroom
+ - [X] Create repository classroom
+ - [ ] Create persistence db and test
+ - [ ] Create table on postgresql
