@@ -24,6 +24,7 @@ to quickly create a Cobra application.`,
 		srv := server.MakeNewWebServer()
 		srv.UsersService = &userService
 		srv.ClassroomRepository = &classroomRepository
+		srv.StudentRepository = &studentRepository
 		fmt.Println("Webserver running on port 9000 🔥🔥🔥")
 		srv.Server()
 	},

@@ -27,8 +27,24 @@ CREATE TABLE IF NOT EXISTS classrooms (
 	grade VARCHAR NOT NULL,
 	shift VARCHAR NOT NULL,
 	description VARCHAR NULL,
-	ANNE VARCHAR NULL,
+	anne VARCHAR NULL,
 	year VARCHAR NOT NULL,
+	status bool NOT NULL DEFAULT true,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS students (
+	id uuid DEFAULT uuid_generate_v4 (),
+	name VARCHAR NOT NULL,
+	birth_day TIMESTAMP NOT NULL,
+	gender VARCHAR NULL,
+	anne VARCHAR NULL,
+	note VARCHAR NULL,
+	ieducar INTEGER NOT NULL,
+	educa_df VARCHAR NULL,
+	classroom_id NULL REFERENCES classrooms (id),
 	status bool NOT NULL DEFAULT true,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),

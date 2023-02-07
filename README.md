@@ -57,5 +57,5 @@ Repository for studying and practicing GOLANG applied in a school management sys
  - [X] Create entity
  - [X] Test entity classroom
  - [X] Create repository classroom
- - [ ] Create persistence db and test
- - [ ] Create table on postgresql
+ - [X] Create persistence db and test
+ - [X] Create table on postgresql

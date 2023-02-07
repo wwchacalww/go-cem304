@@ -19,8 +19,10 @@ var connStr = "postgres://postgres:postgres@db:5432/cem304?sslmode=disable"
 var drv, _ = sql.Open("postgres", connStr)
 var userDb = db.NewUserDB(drv)
 var classDb = db.NewClassroomDB(drv)
+var studentDb = db.NewStudentDB(drv)
 var userService = application.UserService{Persistence: userDb}
 var classroomRepository = repository.ClassroomRepository{Persistence: classDb}
+var studentRepository = repository.StudentRepository{Persistence: studentDb}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
