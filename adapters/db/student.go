@@ -20,12 +20,12 @@ func (std *StudentDB) Create(input repository.StudentInput) (model.StudentInterf
 	classIsSet := false
 	var class model.Classroom
 	if input.ClassroomID != "" {
-		stmt, err := std.db.Prepare("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at from classrooms where id=$1")
+		classStmt, err := std.db.Prepare("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at from classrooms where id=$1")
 		if err != nil {
 			return nil, err
 		}
 
-		err = stmt.QueryRow(input.ClassroomID).Scan(
+		err = classStmt.QueryRow(input.ClassroomID).Scan(
 			&class.ID,
 			&class.Name,
 			&class.Level,
@@ -42,9 +42,8 @@ func (std *StudentDB) Create(input repository.StudentInput) (model.StudentInterf
 			return nil, err
 		}
 		classIsSet = true
-		stmt.Close()
+		classStmt.Close()
 	}
-
 	student, err := model.NewStudent(input.Name, input.BirthDay, input.Educar)
 	student.Gender = input.Gender
 	student.ANNE = input.ANNE
@@ -59,7 +58,6 @@ func (std *StudentDB) Create(input repository.StudentInput) (model.StudentInterf
 	if err != nil {
 		return nil, err
 	}
-
 	stmt, err := std.db.Prepare(`INSERT INTO Students (
 		id,
 		name,
@@ -73,7 +71,7 @@ func (std *StudentDB) Create(input repository.StudentInput) (model.StudentInterf
 		status,
 		created_at,
 		updated_at
-	) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`)
+	) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,$12)`)
 	if err != nil {
 		return nil, err
 	}
@@ -254,33 +252,60 @@ func (std *StudentDB) FindByName(name string) ([]model.StudentInterface, error) 
 	return students, nil
 }
 
-func (std *StudentDB) List(classroom_id string) (model.StudentInterface, error) {
-	var student model.Student
-	var class_id string
-	stmt, err := std.db.Prepare("SELECT id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, created_at, updated_at from students where classroom_id=$1 ORDER BY name ASC")
+func (std *StudentDB) List(classroom_id string) ([]model.StudentInterface, error) {
+	var class model.Classroom
+	classStmt, err := std.db.Prepare("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at from classrooms where id=$1")
 	if err != nil {
 		return nil, err
 	}
 
-	err = stmt.QueryRow(classroom_id).Scan(
-		&student.ID,
-		&student.Name,
-		&student.BirthDay,
-		&student.Gender,
-		&student.ANNE,
-		&student.Note,
-		&student.Educar,
-		&student.EducaDF,
-		&class_id,
-		&student.Status,
-		&student.CreatedAt,
-		&student.UpdatedAt,
+	err = classStmt.QueryRow(classroom_id).Scan(
+		&class.ID,
+		&class.Name,
+		&class.Level,
+		&class.Grade,
+		&class.Shift,
+		&class.Description,
+		&class.ANNE,
+		&class.Year,
+		&class.Status,
+		&class.CreatedAt,
+		&class.UpdatedAt,
 	)
-
 	if err != nil {
 		return nil, err
 	}
-	return &student, nil
+	classStmt.Close()
+
+	var students []model.StudentInterface
+	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, status, created_at, students.updated_at"
+	rows, err := std.db.Query("SELECT "+std_fields+" from students where classroom_id = $1 ORDER BY name ASC", classroom_id)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var student model.Student
+		err = rows.Scan(
+			&student.ID,
+			&student.Name,
+			&student.BirthDay,
+			&student.Gender,
+			&student.ANNE,
+			&student.Note,
+			&student.Educar,
+			&student.EducaDF,
+			&student.Status,
+			&student.CreatedAt,
+			&student.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		student.Classroom = &class
+		students = append(students, &student)
+	}
+
+	return students, nil
 }
 
 func (std *StudentDB) Enable(id string) (model.StudentInterface, error) {

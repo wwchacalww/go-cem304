@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 	"wwchacalww/go-cem304/adapters/db"
+	"wwchacalww/go-cem304/domain/repository"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/require"
@@ -99,46 +100,52 @@ func TestStudent_FindName(t *testing.T) {
 	require.Equal(t, students[1].GetClassroom().GetName(), "1º ano A - Vespertino")
 }
 
-// func TestStudent_List(t *testing.T) {
-// 	setUpstudentTest()
-// 	defer dB.Close()
-// 	studentDB := db.NewStudentDB(dB)
-// 	student, err := studentDB.List("2023")
-// 	require.Nil(t, err)
-// 	require.Equal(t, len(student), 2)
-// }
+func TestStudent_List(t *testing.T) {
+	setUpStudentTest()
+	defer dB_student_test.Close()
+	studentDB := db.NewStudentDB(dB_student_test)
+	students, err := studentDB.List("class-1")
+	require.Nil(t, err)
+	require.Equal(t, len(students), 1)
+	require.Equal(t, students[0].GetClassroom().GetName(), "1º ano A - Vespertino")
+}
 
-// func TestStudent_Create(t *testing.T) {
-// 	setUpstudentTest()
-// 	defer dB.Close()
-// 	studentDB := db.NewStudentDB(dB)
+func TestStudent_Create(t *testing.T) {
+	setUpStudentTest()
+	defer dB_student_test.Close()
+	studentDB := db.NewStudentDB(dB_student_test)
 
-// 	student := model.NewStudent()
-// 	student.Name = "1º ano C - Vespertino"
-// 	student.Level = "1º ano"
-// 	student.Grade = "Ensino Médio"
-// 	student.Shift = "Vespertino"
-// 	student.Year = "2023"
+	input := repository.StudentInput{
+		Name:        "Siclano da Silva Lima",
+		BirthDay:    "29/11/2016",
+		Gender:      "Masculino",
+		Educar:      234234,
+		ANNE:        "",
+		Note:        "",
+		EducaDF:     "",
+		ClassroomID: "class-1",
+	}
 
-// 	err := studentDB.Create(student)
-// 	require.Nil(t, err)
+	student, err := studentDB.Create(input)
+	require.Nil(t, err)
+	// log.Println(student)
 
-// 	studentFind, err := studentDB.FindById(student.GetID())
-// 	require.Nil(t, err)
-// 	require.Equal(t, studentFind.GetName(), student.GetName())
-// 	require.True(t, studentFind.GetStatus())
+	studentFind, err := studentDB.FindById(student.GetID())
+	require.Nil(t, err)
+	require.Equal(t, studentFind.GetName(), student.GetName())
+	require.True(t, studentFind.GetStatus())
 
-// 	studentDisable, err := studentDB.Disable(student.GetID())
-// 	require.Nil(t, err)
-// 	require.False(t, studentDisable.GetStatus())
+	// studentDisable, err := studentDB.Disable(student.GetID())
+	// require.Nil(t, err)
+	// require.False(t, studentDisable.GetStatus())
 
-// 	studentEnable, err := studentDB.Enable(student.GetID())
-// 	require.Nil(t, err)
-// 	log.Println(studentEnable.GetANNE())
-// 	require.True(t, studentEnable.GetStatus())
+	// studentEnable, err := studentDB.Enable(student.GetID())
+	// require.Nil(t, err)
+	// log.Println(studentEnable.GetANNE())
+	// require.True(t, studentEnable.GetStatus())
 
-// 	changeANNE, err := studentDB.ANNE(student.GetID(), "3 alunos ANNE (1 TGD, 2 TDHA)")
-// 	require.Nil(t, err)
-// 	log.Println(changeANNE.GetANNE())
-// 	require.Equal(t, changeANNE.GetANNE(), "3 alunos ANNE (1 TGD, 2 TDHA)")
-// }
+	// changeANNE, err := studentDB.ANNE(student.GetID(), "3 alunos ANNE (1 TGD, 2 TDHA)")
+	// require.Nil(t, err)
+	// log.Println(changeANNE.GetANNE())
+	// require.Equal(t, changeANNE.GetANNE(), "3 alunos ANNE (1 TGD, 2 TDHA)")
+}
