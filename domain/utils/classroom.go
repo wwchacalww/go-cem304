@@ -2,7 +2,9 @@ package utils
 
 import (
 	"encoding/csv"
+	"fmt"
 	"mime/multipart"
+	"wwchacalww/go-cem304/domain/model"
 	"wwchacalww/go-cem304/domain/repository"
 )
 
@@ -38,4 +40,13 @@ func CsvToClassrooms(f multipart.File) ([]repository.ClassroomInput, error) {
 	}
 
 	return list, nil
+}
+
+func FindClassById(classrooms []model.Classroom, classroom_id string) (model.Classroom, error) {
+	for _, class := range classrooms {
+		if class.GetID() == classroom_id {
+			return class, nil
+		}
+	}
+	return model.Classroom{}, fmt.Errorf("Classroom not found")
 }

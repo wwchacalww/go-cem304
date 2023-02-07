@@ -15,6 +15,7 @@ type StudentInterface interface {
 	GetID() string
 	GetName() string
 	GetBirthDay() time.Time
+	GetGender() string
 	GetANNE() string
 	GetNote() string
 	GetEducar() int64
@@ -31,6 +32,7 @@ type Student struct {
 	ID        string             `valid:"uuidv4" json:"id"`
 	Name      string             `valid:"required,stringlength(5|50)" json:"Name"`
 	BirthDay  time.Time          `valid:"required" json:"birth_day"`
+	Gender    string             `valid:"optional" json:"gender"`
 	ANNE      string             `valid:"optional" json:"anne"`
 	Note      string             `valid:"optional" json:"note"`
 	Educar    int64              `valid:"required" json:"ieducar"`
@@ -95,6 +97,10 @@ func (s *Student) GetName() string {
 
 func (s *Student) GetBirthDay() time.Time {
 	return s.BirthDay
+}
+
+func (s *Student) GetGender() string {
+	return s.Gender
 }
 
 func (s *Student) GetANNE() string {

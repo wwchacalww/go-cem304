@@ -5,6 +5,7 @@ import (
 	"time"
 	"wwchacalww/go-cem304/domain/model"
 	"wwchacalww/go-cem304/domain/repository"
+	"wwchacalww/go-cem304/domain/utils"
 )
 
 type StudentDB struct {
@@ -41,9 +42,20 @@ func (std *StudentDB) Create(input repository.StudentInput) (model.StudentInterf
 			return nil, err
 		}
 		classIsSet = true
+		stmt.Close()
 	}
 
 	student, err := model.NewStudent(input.Name, input.BirthDay, input.Educar)
+	student.Gender = input.Gender
+	student.ANNE = input.ANNE
+	student.Note = input.Note
+	student.EducaDF = input.EducaDF
+
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = student.IsValid()
 	if err != nil {
 		return nil, err
 	}
@@ -52,6 +64,7 @@ func (std *StudentDB) Create(input repository.StudentInput) (model.StudentInterf
 		id,
 		name,
 		birth_day,
+		gender,
 		anne,
 		note,
 		ieducar,
@@ -71,6 +84,7 @@ func (std *StudentDB) Create(input repository.StudentInput) (model.StudentInterf
 			student.GetID(),
 			student.GetName(),
 			student.GetBirthDay(),
+			student.GetGender(),
 			student.GetANNE(),
 			student.GetNote(),
 			student.GetEducar(),
@@ -85,6 +99,7 @@ func (std *StudentDB) Create(input repository.StudentInput) (model.StudentInterf
 			student.GetID(),
 			student.GetName(),
 			student.GetBirthDay(),
+			student.GetGender(),
 			student.GetANNE(),
 			student.GetNote(),
 			student.GetEducar(),
@@ -109,7 +124,9 @@ func (std *StudentDB) Create(input repository.StudentInput) (model.StudentInterf
 func (std *StudentDB) FindById(id string) (model.StudentInterface, error) {
 	var student model.Student
 	var classroom_id string
-	stmt, err := std.db.Prepare("SELECT id, name, birth_day, anne, note, ieducar, educa_df, classroom_id, status, created_at, updated_at from students where id=$1")
+
+	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, created_at, students.updated_at"
+	stmt, err := std.db.Prepare("SELECT " + std_fields + " from students WHERE id = $1")
 	if err != nil {
 		return nil, err
 	}
@@ -118,6 +135,7 @@ func (std *StudentDB) FindById(id string) (model.StudentInterface, error) {
 		&student.ID,
 		&student.Name,
 		&student.BirthDay,
+		&student.Gender,
 		&student.ANNE,
 		&student.Note,
 		&student.Educar,
@@ -127,6 +145,36 @@ func (std *StudentDB) FindById(id string) (model.StudentInterface, error) {
 		&student.CreatedAt,
 		&student.UpdatedAt,
 	)
+	stmt.Close()
+
+	if classroom_id != "" {
+		var class model.Classroom
+		class_fields := "id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at"
+
+		classStmt, err := std.db.Prepare("SELECT " + class_fields + " from classrooms where id=$1")
+		if err != nil {
+			return nil, err
+		}
+
+		err = classStmt.QueryRow(classroom_id).Scan(
+			&class.ID,
+			&class.Name,
+			&class.Level,
+			&class.Grade,
+			&class.Shift,
+			&class.Description,
+			&class.ANNE,
+			&class.Year,
+			&class.Status,
+			&class.CreatedAt,
+			&class.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		student.Classroom = &class
+		classStmt.Close()
+	}
 
 	if err != nil {
 		return nil, err
@@ -135,20 +183,51 @@ func (std *StudentDB) FindById(id string) (model.StudentInterface, error) {
 }
 
 func (std *StudentDB) FindByName(name string) ([]model.StudentInterface, error) {
-	var students []model.StudentInterface
-	var classroom_id string
-	rows, err := std.db.Query("SELECT id, name, birth_day, anne, note, ieducar, educa_df, classroom_id, status, created_at, updated_at from students where name like $1 ORDER BY name ASC", "%"+name+"%")
+	startDate := time.Date(time.Now().Year(), time.January, 1, 12, 15, 5, 5, time.Local)
+	var classrooms []model.Classroom
+	class_fields := "id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at"
+	classRows, err := std.db.Query("SELECT "+class_fields+" from classrooms WHERE created_at > $1", startDate)
 	if err != nil {
 		return nil, err
 	}
+	defer classRows.Close()
+	for classRows.Next() {
+		var class model.Classroom
+		err = classRows.Scan(
+			&class.ID,
+			&class.Name,
+			&class.Level,
+			&class.Grade,
+			&class.Shift,
+			&class.Description,
+			&class.ANNE,
+			&class.Year,
+			&class.Status,
+			&class.CreatedAt,
+			&class.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
 
+		classrooms = append(classrooms, class)
+	}
+
+	var students []model.StudentInterface
+	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, created_at, students.updated_at"
+	rows, err := std.db.Query("SELECT "+std_fields+" from students where name like $1 ORDER BY name ASC", "%"+name+"%")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	for rows.Next() {
 		var student model.Student
+		var classroom_id string
 		err = rows.Scan(
-			&student.ID,
 			&student.ID,
 			&student.Name,
 			&student.BirthDay,
+			&student.Gender,
 			&student.ANNE,
 			&student.Note,
 			&student.Educar,
@@ -161,6 +240,14 @@ func (std *StudentDB) FindByName(name string) ([]model.StudentInterface, error) 
 		if err != nil {
 			return nil, err
 		}
+
+		if classroom_id != "" {
+			xpto, err := utils.FindClassById(classrooms, classroom_id)
+			if err != nil {
+				return nil, err
+			}
+			student.Classroom = &xpto
+		}
 		students = append(students, &student)
 	}
 
@@ -170,7 +257,7 @@ func (std *StudentDB) FindByName(name string) ([]model.StudentInterface, error) 
 func (std *StudentDB) List(classroom_id string) (model.StudentInterface, error) {
 	var student model.Student
 	var class_id string
-	stmt, err := std.db.Prepare("SELECT id, name, birth_day, anne, note, ieducar, educa_df, classroom_id, status, created_at, updated_at from students where classroom_id=$1 ORDER BY name ASC")
+	stmt, err := std.db.Prepare("SELECT id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, created_at, updated_at from students where classroom_id=$1 ORDER BY name ASC")
 	if err != nil {
 		return nil, err
 	}
@@ -179,6 +266,7 @@ func (std *StudentDB) List(classroom_id string) (model.StudentInterface, error) 
 		&student.ID,
 		&student.Name,
 		&student.BirthDay,
+		&student.Gender,
 		&student.ANNE,
 		&student.Note,
 		&student.Educar,
@@ -203,7 +291,7 @@ func (std *StudentDB) Enable(id string) (model.StudentInterface, error) {
 
 	var student model.Student
 	var classroom_id string
-	stmt, err := std.db.Prepare("SELECT id, name, birth_day, anne, note, ieducar, educa_df, classroom_id, status, created_at, updated_at from students where id=$1")
+	stmt, err := std.db.Prepare("SELECT id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, created_at, updated_at from students where id=$1")
 	if err != nil {
 		return nil, err
 	}
@@ -212,6 +300,7 @@ func (std *StudentDB) Enable(id string) (model.StudentInterface, error) {
 		&student.ID,
 		&student.Name,
 		&student.BirthDay,
+		&student.Gender,
 		&student.ANNE,
 		&student.Note,
 		&student.Educar,
@@ -236,7 +325,7 @@ func (std *StudentDB) Disable(id string) (model.StudentInterface, error) {
 
 	var student model.Student
 	var classroom_id string
-	stmt, err := std.db.Prepare("SELECT id, name, birth_day, anne, note, ieducar, educa_df, classroom_id, status, created_at, updated_at from students where id=$1")
+	stmt, err := std.db.Prepare("SELECT id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, created_at, updated_at from students where id=$1")
 	if err != nil {
 		return nil, err
 	}
@@ -245,6 +334,7 @@ func (std *StudentDB) Disable(id string) (model.StudentInterface, error) {
 		&student.ID,
 		&student.Name,
 		&student.BirthDay,
+		&student.Gender,
 		&student.ANNE,
 		&student.Note,
 		&student.Educar,
@@ -269,7 +359,7 @@ func (std *StudentDB) ANNE(id, anne string) (model.StudentInterface, error) {
 
 	var student model.Student
 	var classroom_id string
-	stmt, err := std.db.Prepare("SELECT id, name, birth_day, anne, note, ieducar, educa_df, classroom_id, status, created_at, updated_at from students where id=$1")
+	stmt, err := std.db.Prepare("SELECT id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, created_at, updated_at from students where id=$1")
 	if err != nil {
 		return nil, err
 	}
@@ -278,6 +368,7 @@ func (std *StudentDB) ANNE(id, anne string) (model.StudentInterface, error) {
 		&student.ID,
 		&student.Name,
 		&student.BirthDay,
+		&student.Gender,
 		&student.ANNE,
 		&student.Note,
 		&student.Educar,
@@ -326,6 +417,7 @@ func (std *StudentDB) AddMass(mass []repository.StudentInput) ([]model.StudentIn
 		id,
 		name,
 		birth_day,
+		gender,
 		anne,
 		note,
 		ieducar,
@@ -353,6 +445,7 @@ func (std *StudentDB) AddMass(mass []repository.StudentInput) ([]model.StudentIn
 		}
 		query = query + "'" + study.GetName() + "',"
 		query = query + "'" + string(study.GetBirthDay().Format(time.RFC3339)) + "',"
+		query = query + "'" + study.GetGender() + "',"
 		query = query + "'" + study.GetANNE() + "',"
 		query = query + "'" + study.GetNote() + "',"
 		query = query + string(study.GetEducar()) + ","

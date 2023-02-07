@@ -7,6 +7,7 @@ import (
 type StudentInput struct {
 	Name        string `json:"name"`
 	BirthDay    string `json:"birth_day"`
+	Gender      string `json:"gender"`
 	ANNE        string `json:"anne"`
 	Note        string `json:"note"`
 	Educar      int64  `json:"ieducar"`
