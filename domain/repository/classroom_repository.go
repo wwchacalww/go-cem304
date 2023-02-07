@@ -5,12 +5,12 @@ import (
 )
 
 type ClassroomInput struct {
-	Name        string `json:"Name"`
+	Name        string `json:"name"`
 	Level       string `json:"level"`
 	Grade       string `json:"grade"`
 	Shift       string `json:"shift"`
 	Description string `json:"description"`
-	ANNE        string `json:"ANNE"`
+	ANNE        string `json:"anne"`
 	Year        string `json:"year"`
 }
 

@@ -14,6 +14,7 @@ import (
 type WebServer struct {
 	UsersService        application.UserServiceInterface
 	ClassroomRepository repository.ClassroomRepositoryInterface
+	StudentRepository   repository.StudentRepositoryInterface
 }
 
 func MakeNewWebServer() *WebServer {
