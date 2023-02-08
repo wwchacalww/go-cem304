@@ -37,6 +37,7 @@ func (w WebServer) Server() {
 	r.Use(middleware.Logger)
 	handler.MakeUserHandlers(r, w.UsersService)
 	handler.MakeClassroomHandlers(r, w.ClassroomRepository)
+	handler.MakeStudentHandlers(r, w.StudentRepository)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World!"))
 	})
