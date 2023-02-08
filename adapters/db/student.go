@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"strconv"
 	"time"
 	"wwchacalww/go-cem304/domain/model"
 	"wwchacalww/go-cem304/domain/repository"
@@ -411,34 +412,56 @@ func (std *StudentDB) ANNE(id, anne string) (model.StudentInterface, error) {
 }
 
 func (std *StudentDB) AddMass(mass []repository.StudentInput) ([]model.StudentInterface, error) {
-	var class model.Classroom
-	classroom_id := mass[0].ClassroomID
-	stmt, err := std.db.Prepare("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at from classrooms where id=$1")
+	// Listar as turmas
+	startDate := time.Date(time.Now().Year(), time.January, 1, 12, 15, 5, 5, time.Local)
+	var classrooms []model.Classroom
+	class_fields := "id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at"
+	classRows, err := std.db.Query("SELECT "+class_fields+" from classrooms WHERE created_at > $1", startDate)
 	if err != nil {
 		return nil, err
+	}
+	defer classRows.Close()
+	for classRows.Next() {
+		var class model.Classroom
+		err = classRows.Scan(
+			&class.ID,
+			&class.Name,
+			&class.Level,
+			&class.Grade,
+			&class.Shift,
+			&class.Description,
+			&class.ANNE,
+			&class.Year,
+			&class.Status,
+			&class.CreatedAt,
+			&class.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		classrooms = append(classrooms, class)
 	}
 
 	var students []model.StudentInterface
-	err = stmt.QueryRow(classroom_id).Scan(
-		&class.ID,
-		&class.Name,
-		&class.Level,
-		&class.Grade,
-		&class.Shift,
-		&class.Description,
-		&class.ANNE,
-		&class.Year,
-		&class.Status,
-		&class.CreatedAt,
-		&class.UpdatedAt,
-	)
-	if err != nil {
-		return nil, err
+	for _, s := range mass {
+		class, err := utils.FindClassById(classrooms, s.ClassroomID)
+		if err != nil {
+			return nil, err
+		}
+		student, err := model.NewStudent(
+			s.Name, s.BirthDay, s.Educar,
+		)
+		if err != nil {
+			return nil, err
+		}
+		student.Gender = s.Gender
+		student.ANNE = s.ANNE
+		student.Classroom = &class
+		students = append(students, student)
 	}
-	stmt.Close()
 
-	var query string
-	query = `INSERT INTO Students (
+	query := `INSERT INTO Students (
 		id,
 		name,
 		birth_day,
@@ -452,33 +475,24 @@ func (std *StudentDB) AddMass(mass []repository.StudentInput) ([]model.StudentIn
 		created_at,
 		updated_at
 	) values `
-	for i, s := range mass {
-		study, err := model.NewStudent(s.Name, s.BirthDay, s.Educar)
-		if err != nil {
-			return nil, err
-		}
-		study.ANNE = s.ANNE
-		study.Note = s.Note
-		study.Educar = s.Educar
-		study.EducaDF = s.EducaDF
-		study.Classroom = &class
-		students = append(students, study)
+
+	for i, st := range students {
 		if i == 0 {
-			query = query + "('" + study.GetID() + "',"
+			query = query + "('" + st.GetID() + "',"
 		} else {
-			query = query + ", ('" + study.GetID() + "',"
+			query = query + ", ('" + st.GetID() + "',"
 		}
-		query = query + "'" + study.GetName() + "',"
-		query = query + "'" + string(study.GetBirthDay().Format(time.RFC3339)) + "',"
-		query = query + "'" + study.GetGender() + "',"
-		query = query + "'" + study.GetANNE() + "',"
-		query = query + "'" + study.GetNote() + "',"
-		query = query + string(study.GetEducar()) + ","
-		query = query + "'" + study.GetEducaDF() + "',"
-		query = query + "'" + classroom_id + "',"
+		query = query + "'" + st.GetName() + "',"
+		query = query + "'" + string(st.GetBirthDay().Format(time.RFC3339)) + "',"
+		query = query + "'" + st.GetGender() + "',"
+		query = query + "'" + st.GetANNE() + "',"
+		query = query + "'" + st.GetNote() + "',"
+		query = query + strconv.FormatInt(st.GetEducar(), 10) + ","
+		query = query + "'" + st.GetEducaDF() + "',"
+		query = query + "'" + st.GetClassroom().GetID() + "',"
 		query = query + "true,"
-		query = query + "'" + string(study.GetCreatedAt().Format(time.RFC3339)) + "',"
-		query = query + "'" + string(study.GetUpdatedAt().Format(time.RFC3339)) + "') "
+		query = query + "'" + string(st.GetCreatedAt().Format(time.RFC3339)) + "',"
+		query = query + "'" + string(st.GetUpdatedAt().Format(time.RFC3339)) + "') "
 	}
 
 	_, err = std.db.Exec(query)

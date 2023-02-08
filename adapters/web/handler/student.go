@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"wwchacalww/go-cem304/domain/repository"
+	"wwchacalww/go-cem304/domain/utils"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -20,7 +21,7 @@ func MakeStudentHandlers(r *chi.Mux, repo repository.StudentRepositoryInterface)
 
 	r.Route("/students", func(r chi.Router) {
 		r.Post("/", handler.Store)
-		// r.Post("/import", handler.Import)
+		r.Post("/import", handler.Import)
 		r.Get("/{id}", handler.GetStudent)
 		r.Get("/search", handler.FindByName)
 		r.Get("/list", handler.List)
@@ -90,9 +91,9 @@ func (s *StudentHandler) FindByName(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *StudentHandler) List(w http.ResponseWriter, r *http.Request) {
-	year := r.URL.Query().Get("year")
-	log.Println(year)
-	Students, err := s.Repo.List(year)
+	classroom_id := r.URL.Query().Get("class")
+	log.Println(classroom_id)
+	Students, err := s.Repo.List(classroom_id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))
@@ -162,40 +163,39 @@ func (s *StudentHandler) ANNE(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-// func (s *StudentHandler) Import(w http.ResponseWriter, r *http.Request) {
-// 	f, fh, err := r.FormFile("file")
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		w.Write(jsonError(err.Error()))
-// 		return
-// 	}
-// 	ct := fh.Header.Get("Content-Type")
-// 	if ct != "text/csv" {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		w.Write(jsonError("File type invalid"))
-// 		return
-// 	}
-// 	defer f.Close()
+func (s *StudentHandler) Import(w http.ResponseWriter, r *http.Request) {
+	f, fh, err := r.FormFile("file")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	ct := fh.Header.Get("Content-Type")
+	if ct != "text/csv" {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError("File type invalid"))
+		return
+	}
+	defer f.Close()
 
-// 	list, err := utils.CsvToStudents(f)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		w.Write(jsonError(err.Error()))
-// 		return
-// 	}
+	list, err := utils.CsvToStudents(f)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	result, err := s.Repo.AddMass(list)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 
-// 	result, err := s.Repo.AddMass(list)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		w.Write(jsonError(err.Error()))
-// 		return
-// 	}
-
-// 	err = json.NewEncoder(w).Encode(result)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		w.Write(jsonError(err.Error()))
-// 		return
-// 	}
-// 	w.WriteHeader(http.StatusCreated)
-// }
+	err = json.NewEncoder(w).Encode(result)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}

@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS students (
 	gender VARCHAR NULL,
 	anne VARCHAR NULL,
 	note VARCHAR NULL,
-	ieducar INTEGER NOT NULL,
+	ieducar INTEGER UNIQUE NOT NULL,
 	educa_df VARCHAR NULL,
 	classroom_id NULL REFERENCES classrooms (id),
 	status bool NOT NULL DEFAULT true,
