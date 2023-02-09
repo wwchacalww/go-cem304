@@ -2,10 +2,13 @@ package handler
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"wwchacalww/go-cem304/domain/repository"
 	"wwchacalww/go-cem304/domain/utils"
+	reportpdf "wwchacalww/go-cem304/usecase/report-pdf"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -28,6 +31,7 @@ func MakeClassroomHandlers(r *chi.Mux, repo repository.ClassroomRepositoryInterf
 		r.Patch("/enable/{id}", handler.Enable)
 		r.Patch("/disable/{id}", handler.Disable)
 		r.Patch("/anne", handler.ANNE)
+		r.Get("/report/{id}", handler.StudentsInClassPDF)
 	})
 }
 
@@ -199,4 +203,33 @@ func (c *ClassroomHandler) Import(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (c *ClassroomHandler) StudentsInClassPDF(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	class, err := c.Repo.FindById(id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	err = reportpdf.StudentsInClass(class)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	fileD, err := os.Open("pdf/hello.pdf")
+	if err != nil {
+		log.Panic(err)
+	}
+	file_bytes, err := ioutil.ReadAll(fileD)
+	if err != nil {
+		log.Panic(err)
+	}
+	w.Header().Add("content-type", "application/pdf")
+	w.Write(file_bytes)
+	os.Remove("pdf/hello.pdf")
 }

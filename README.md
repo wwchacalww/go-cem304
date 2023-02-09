@@ -37,14 +37,14 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [X] Desactivate Classroom
    - [X] Import file csv and registry Classrooms
 - [ ] Create Students handler server
-   - [ ] Create Students
-   - [ ] Get by id Students
-   - [ ] Get by name Students
-   - [ ] List Students
+   - [X] Create Students
+   - [X] Get by id Students
+   - [X] Get by name Students
+   - [X] List Students
    - [ ] Update ANNE Students
    - [ ] Activate Students
    - [ ] Desactivate Students
-   - [ ] Import file csv and registry Classrooms
+   - [X] Import file csv and registry Classrooms
 ## Domains - Classrooms
  - [X] Create entity
  - [X] Test entity classroom
@@ -59,3 +59,7 @@ Repository for studying and practicing GOLANG applied in a school management sys
  - [X] Create repository classroom
  - [X] Create persistence db and test
  - [X] Create table on postgresql
+
+## PDF report generator
+ - [ ] Create a function for generator PDF
+ - [ ] Create student's list in pdf
