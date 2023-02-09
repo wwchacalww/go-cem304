@@ -61,6 +61,7 @@ func (c *ClassroomDB) FindById(id string) (model.ClassroomInterface, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer stmt.Close()
 
 	err = stmt.QueryRow(id).Scan(
 		&class.ID,
@@ -78,6 +79,36 @@ func (c *ClassroomDB) FindById(id string) (model.ClassroomInterface, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	var students []model.StudentInterface
+	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, status, created_at, students.updated_at"
+	rows, err := c.db.Query("SELECT "+std_fields+" FROM students WHERE classroom_id = $1 ORDER BY name", id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var student model.Student
+		err = rows.Scan(
+			&student.ID,
+			&student.Name,
+			&student.BirthDay,
+			&student.Gender,
+			&student.ANNE,
+			&student.Note,
+			&student.Educar,
+			&student.EducaDF,
+			&student.Status,
+			&student.CreatedAt,
+			&student.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		students = append(students, &student)
+	}
+	class.Students = students
 	return &class, nil
 }
 

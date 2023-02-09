@@ -20,22 +20,24 @@ type ClassroomInterface interface {
 	GetCreatedAt() time.Time
 	GetUpdatedAt() time.Time
 	GetStatus() bool
+	GetStudents() []StudentInterface
 	Enable() error
 	Disable() error
 }
 
 type Classroom struct {
-	ID          string    `valid:"uuidv4" json:"id"`
-	Name        string    `valid:"required,stringlength(5|50)" json:"Name"`
-	Level       string    `valid:"required" json:"level"`
-	Grade       string    `valid:"required" json:"grade"`
-	Shift       string    `valid:"required" json:"shift"`
-	Description string    `valid:"optional" json:"description"`
-	ANNE        string    `valid:"optional" json:"ANNE"`
-	Year        string    `valid:"required" json:"year"`
-	Status      bool      `valid:"optional" json:"status"`
-	CreatedAt   time.Time `valid:"optional" json:"created_at"`
-	UpdatedAt   time.Time `valid:"optional" json:"updated_at"`
+	ID          string             `valid:"uuidv4" json:"id"`
+	Name        string             `valid:"required,stringlength(5|50)" json:"Name"`
+	Level       string             `valid:"required" json:"level"`
+	Grade       string             `valid:"required" json:"grade"`
+	Shift       string             `valid:"required" json:"shift"`
+	Description string             `valid:"optional" json:"description"`
+	ANNE        string             `valid:"optional" json:"ANNE"`
+	Year        string             `valid:"required" json:"year"`
+	Status      bool               `valid:"optional" json:"status"`
+	Students    []StudentInterface `valid:"optional" json:"students"`
+	CreatedAt   time.Time          `valid:"optional" json:"created_at"`
+	UpdatedAt   time.Time          `valid:"optional" json:"updated_at"`
 }
 
 func NewClassroom() *Classroom {
@@ -103,6 +105,10 @@ func (c *Classroom) GetUpdatedAt() time.Time {
 
 func (c *Classroom) GetStatus() bool {
 	return c.Status
+}
+
+func (c *Classroom) GetStudents() []StudentInterface {
+	return c.Students
 }
 
 func (c *Classroom) Enable() error {

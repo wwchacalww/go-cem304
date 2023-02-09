@@ -7,6 +7,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/render v1.0.2
 	github.com/golang/mock v1.6.0
+	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/rs/cors v1.8.3
 	github.com/satori/go.uuid v1.2.0
