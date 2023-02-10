@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"wwchacalww/go-cem304/domain/model"
 	"wwchacalww/go-cem304/domain/repository"
 	"wwchacalww/go-cem304/domain/utils"
 	reportpdf "wwchacalww/go-cem304/usecase/report-pdf"
@@ -32,6 +33,7 @@ func MakeClassroomHandlers(r *chi.Mux, repo repository.ClassroomRepositoryInterf
 		r.Patch("/disable/{id}", handler.Disable)
 		r.Patch("/anne", handler.ANNE)
 		r.Get("/report/{id}", handler.StudentsInClassPDF)
+		r.Get("/report/all/", handler.AllClassroomsPDF)
 	})
 }
 
@@ -96,7 +98,6 @@ func (c *ClassroomHandler) FindByName(w http.ResponseWriter, r *http.Request) {
 
 func (c *ClassroomHandler) List(w http.ResponseWriter, r *http.Request) {
 	year := r.URL.Query().Get("year")
-	log.Println(year)
 	classrooms, err := c.Repo.List(year)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -232,4 +233,43 @@ func (c *ClassroomHandler) StudentsInClassPDF(w http.ResponseWriter, r *http.Req
 	w.Header().Add("content-type", "application/pdf")
 	w.Write(file_bytes)
 	os.Remove("pdf/hello.pdf")
+}
+
+func (c *ClassroomHandler) AllClassroomsPDF(w http.ResponseWriter, r *http.Request) {
+	classrooms, err := c.Repo.List("2023")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	var class []model.ClassroomInterface
+	for _, cl := range classrooms {
+		classroom, err := c.Repo.FindById(cl.GetID())
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(jsonError(err.Error()))
+			return
+		}
+		class = append(class, classroom)
+	}
+	err = reportpdf.ReportAllClass(class)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	fileD, err := os.Open("pdf/all-classrooms.pdf")
+	if err != nil {
+		log.Panic(err)
+	}
+	file_bytes, err := ioutil.ReadAll(fileD)
+	if err != nil {
+		log.Panic(err)
+	}
+	w.Header().Add("content-type", "application/pdf")
+	w.Write(file_bytes)
+	os.Remove("pdf/all-classrooms.pdf")
 }
