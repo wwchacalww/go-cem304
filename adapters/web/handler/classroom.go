@@ -96,23 +96,6 @@ func (c *ClassroomHandler) FindByName(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (c *ClassroomHandler) List(w http.ResponseWriter, r *http.Request) {
-	year := r.URL.Query().Get("year")
-	classrooms, err := c.Repo.List(year)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(jsonError(err.Error()))
-		return
-	}
-	err = json.NewEncoder(w).Encode(classrooms)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(jsonError(err.Error()))
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
-}
-
 func (c *ClassroomHandler) Enable(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	class, err := c.Repo.Enable(id)
@@ -233,6 +216,42 @@ func (c *ClassroomHandler) StudentsInClassPDF(w http.ResponseWriter, r *http.Req
 	w.Header().Add("content-type", "application/pdf")
 	w.Write(file_bytes)
 	os.Remove("pdf/hello.pdf")
+}
+
+func (c *ClassroomHandler) List(w http.ResponseWriter, r *http.Request) {
+	year := r.URL.Query().Get("year")
+	classrooms, err := c.Repo.List(year)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	var class []model.ClassroomInterface
+	for _, cl := range classrooms {
+		classroom, err := c.Repo.FindById(cl.GetID())
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(jsonError(err.Error()))
+			return
+		}
+		class = append(class, classroom)
+	}
+
+	err = reportpdf.ReportAllClass(class)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	err = json.NewEncoder(w).Encode(class)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (c *ClassroomHandler) AllClassroomsPDF(w http.ResponseWriter, r *http.Request) {
