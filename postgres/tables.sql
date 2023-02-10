@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS students (
 	note VARCHAR NULL,
 	ieducar INTEGER UNIQUE NOT NULL,
 	educa_df VARCHAR NULL,
-	classroom_id NULL REFERENCES classrooms (id),
+	classroom_id uuid NULL REFERENCES classrooms (id),
 	status bool NOT NULL DEFAULT true,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),

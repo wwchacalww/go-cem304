@@ -10,6 +10,7 @@ import (
 func CsvToStudents(f multipart.File) ([]repository.StudentInput, error) {
 	var list []repository.StudentInput
 	csvReader := csv.NewReader(f)
+	csvReader.Comma = ';'
 	data, err := csvReader.ReadAll()
 	if err != nil {
 		return []repository.StudentInput{}, err

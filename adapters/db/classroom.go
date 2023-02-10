@@ -149,6 +149,7 @@ func (c *ClassroomDB) List(year string) ([]model.ClassroomInterface, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var class model.Classroom
@@ -170,7 +171,6 @@ func (c *ClassroomDB) List(year string) ([]model.ClassroomInterface, error) {
 		}
 		classrooms = append(classrooms, &class)
 	}
-
 	return classrooms, nil
 }
 
