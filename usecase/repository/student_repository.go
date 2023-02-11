@@ -84,3 +84,12 @@ func (repo *StudentRepository) AddMass(mass []repository.StudentInput) ([]model.
 
 	return result, nil
 }
+
+func (repo *StudentRepository) ChangeClassroom(id, classroom_id string) error {
+	err := repo.Persistence.ChangeClassroom(id, classroom_id)
+	if err != nil {
+		return err
+	}
+
+	return err
+}

@@ -24,6 +24,7 @@ type StudentRepositoryInterface interface {
 	Disable(id string) (model.StudentInterface, error)
 	ANNE(id, anne string) (model.StudentInterface, error)
 	AddMass(mass []StudentInput) ([]model.StudentInterface, error)
+	ChangeClassroom(id, classroom_id string) error
 }
 
 type StudentPersistence interface {
@@ -35,4 +36,5 @@ type StudentPersistence interface {
 	Disable(id string) (model.StudentInterface, error)
 	ANNE(id, anne string) (model.StudentInterface, error)
 	AddMass(mass []StudentInput) ([]model.StudentInterface, error)
+	ChangeClassroom(id, classroom_id string) error
 }

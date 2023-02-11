@@ -46,7 +46,7 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [ ] Activate Students
    - [ ] Desactivate Students
    - [X] Import file csv and registry Classrooms
-   - [ ] Change Classroom
+   - [X] Change Classroom
 ## Domains - Classrooms
  - [X] Create entity
  - [X] Test entity classroom

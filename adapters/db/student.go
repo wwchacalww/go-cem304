@@ -502,3 +502,12 @@ func (std *StudentDB) AddMass(mass []repository.StudentInput) ([]model.StudentIn
 
 	return students, nil
 }
+
+func (c *StudentDB) ChangeClassroom(id, classroom_id string) error {
+	_, err := c.db.Exec("UPDATE students SET classroom_id=$1 WHERE id=$2", classroom_id, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -25,6 +25,7 @@ func MakeStudentHandlers(r *chi.Mux, repo repository.StudentRepositoryInterface)
 		r.Get("/{id}", handler.GetStudent)
 		r.Get("/search", handler.FindByName)
 		r.Get("/list", handler.List)
+		r.Put("/change", handler.ChangeClassroom)
 		// r.Patch("/enable/{id}", handler.Enable)
 		// r.Patch("/disable/{id}", handler.Disable)
 		// r.Patch("/anne", handler.ANNE)
@@ -54,6 +55,29 @@ func (s *StudentHandler) Store(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (s *StudentHandler) ChangeClassroom(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		ID          string `json:"id"`
+		ClassroomID string `json:"classroom_id"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	err = s.Repo.ChangeClassroom(input.ID, input.ClassroomID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	w.WriteHeader(201)
+	w.Write(jsonError("classroom updated"))
 }
 
 func (s *StudentHandler) GetStudent(w http.ResponseWriter, r *http.Request) {
