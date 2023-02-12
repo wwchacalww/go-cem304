@@ -34,6 +34,8 @@ func MakeClassroomHandlers(r *chi.Mux, repo repository.ClassroomRepositoryInterf
 		r.Patch("/anne", handler.ANNE)
 		r.Get("/report/{id}", handler.StudentsInClassPDF)
 		r.Get("/report/all/", handler.AllClassroomsPDF)
+		r.Get("/report/diary/{id}", handler.DiaryClassPDF)
+		r.Get("/report/diary/all/", handler.DiaryAllClassroomsPDF)
 	})
 }
 
@@ -291,4 +293,73 @@ func (c *ClassroomHandler) AllClassroomsPDF(w http.ResponseWriter, r *http.Reque
 	w.Header().Add("content-type", "application/pdf")
 	w.Write(file_bytes)
 	os.Remove("pdf/all-classrooms.pdf")
+}
+
+func (c *ClassroomHandler) DiaryClassPDF(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	class, err := c.Repo.FindById(id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	err = reportpdf.DiaryClass(class)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	fileD, err := os.Open("pdf/diary_class.pdf")
+	if err != nil {
+		log.Panic(err)
+	}
+	file_bytes, err := ioutil.ReadAll(fileD)
+	if err != nil {
+		log.Panic(err)
+	}
+	w.Header().Add("content-type", "application/pdf")
+	w.Write(file_bytes)
+	os.Remove("pdf/diary_class.pdf")
+}
+
+func (c *ClassroomHandler) DiaryAllClassroomsPDF(w http.ResponseWriter, r *http.Request) {
+	classrooms, err := c.Repo.List("2023")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	var class []model.ClassroomInterface
+	for _, cl := range classrooms {
+		classroom, err := c.Repo.FindById(cl.GetID())
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(jsonError(err.Error()))
+			return
+		}
+		class = append(class, classroom)
+	}
+	err = reportpdf.DiaryAllClass(class)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	fileD, err := os.Open("pdf/diary_all_classrooms.pdf")
+	if err != nil {
+		log.Panic(err)
+	}
+	file_bytes, err := ioutil.ReadAll(fileD)
+	if err != nil {
+		log.Panic(err)
+	}
+	w.Header().Add("content-type", "application/pdf")
+	w.Write(file_bytes)
+	os.Remove("pdf/diary_all_classrooms.pdf")
+
 }
