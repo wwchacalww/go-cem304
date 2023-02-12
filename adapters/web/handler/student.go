@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"wwchacalww/go-cem304/domain/repository"
 	"wwchacalww/go-cem304/domain/utils"
+	"wwchacalww/go-cem304/usecase/check"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -26,6 +27,7 @@ func MakeStudentHandlers(r *chi.Mux, repo repository.StudentRepositoryInterface)
 		r.Get("/search", handler.FindByName)
 		r.Get("/list", handler.List)
 		r.Put("/change", handler.ChangeClassroom)
+		r.Put("/checkclass", handler.CheckStudentsInClass)
 		// r.Patch("/enable/{id}", handler.Enable)
 		// r.Patch("/disable/{id}", handler.Disable)
 		// r.Patch("/anne", handler.ANNE)
@@ -82,13 +84,13 @@ func (s *StudentHandler) ChangeClassroom(w http.ResponseWriter, r *http.Request)
 
 func (s *StudentHandler) GetStudent(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	class, err := s.Repo.FindById(id)
+	student, err := s.Repo.FindById(id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))
 		return
 	}
-	err = json.NewEncoder(w).Encode(class)
+	err = json.NewEncoder(w).Encode(student)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))
@@ -216,6 +218,50 @@ func (s *StudentHandler) Import(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = json.NewEncoder(w).Encode(result)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (s *StudentHandler) CheckStudentsInClass(w http.ResponseWriter, r *http.Request) {
+	f, fh, err := r.FormFile("file")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	classroom_id := r.FormValue("classroom_id")
+	students, err := s.Repo.List(classroom_id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	ct := fh.Header.Get("Content-Type")
+	if ct != "text/csv" {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError("File type invalid"))
+		return
+	}
+	defer f.Close()
+
+	list, err := utils.StudentsInClass(f, classroom_id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	output, err := check.CheckStudentsInClass(list, classroom_id, students)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	log.Println(output)
+	err = json.NewEncoder(w).Encode(output)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))

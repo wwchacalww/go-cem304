@@ -7,6 +7,11 @@ import (
 	"wwchacalww/go-cem304/domain/repository"
 )
 
+type InputCheckStudentInClass struct {
+	Educar      int64  `json:"ieducar"`
+	ClassroomID string `json:"classroom_id"`
+}
+
 func CsvToStudents(f multipart.File) ([]repository.StudentInput, error) {
 	var list []repository.StudentInput
 	csvReader := csv.NewReader(f)
@@ -34,6 +39,32 @@ func CsvToStudents(f multipart.File) ([]repository.StudentInput, error) {
 					rec.ClassroomID = field
 				}
 			}
+			list = append(list, rec)
+		}
+	}
+
+	return list, nil
+}
+
+func StudentsInClass(f multipart.File, classroom_id string) ([]InputCheckStudentInClass, error) {
+
+	var list []InputCheckStudentInClass
+	csvReader := csv.NewReader(f)
+	csvReader.Comma = ';'
+	data, err := csvReader.ReadAll()
+	if err != nil {
+		return []InputCheckStudentInClass{}, err
+	}
+	for _, line := range data {
+		if len(line) == 1 {
+			var rec InputCheckStudentInClass
+			for j, field := range line {
+				switch {
+				case j == 0:
+					rec.Educar, _ = strconv.ParseInt(field, 10, 64)
+				}
+			}
+			rec.ClassroomID = classroom_id
 			list = append(list, rec)
 		}
 	}
