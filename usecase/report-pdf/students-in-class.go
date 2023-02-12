@@ -1,6 +1,7 @@
 package reportpdf
 
 import (
+	"log"
 	"strconv"
 	"wwchacalww/go-cem304/domain/model"
 
@@ -213,16 +214,26 @@ func DiaryClass(class model.ClassroomInterface) error {
 
 func DiaryAllClass(classrooms []model.ClassroomInterface) error {
 	pdf := gofpdf.New("L", "mm", "A4", "")
+	numberPage := "1"
+	nPages := "1"
+	pdf.SetFooterFunc(func() {
+		// Footer
+		pdf.SetY(-15)
+		pdf.CellFormat(260, 8, "Página "+numberPage+" de "+nPages, "0", 1, "R", false, 0, "")
+	})
 	for _, class := range classrooms {
 		if len(class.GetStudents()) > 0 {
+
 			ts := strconv.Itoa(len(class.GetStudents()))
-			numberPage := "1"
-			pdf.SetFooterFunc(func() {
-				// Footer
-				pdf.SetY(-15)
-				pdf.CellFormat(260, 8, "Página "+numberPage+" de 2", "0", 1, "R", false, 0, "")
-			})
+
 			pdf.AddPage()
+			if len(class.GetStudents()) >= 31 {
+				nPages = "2"
+				log.Println(nPages)
+			} else {
+				nPages = "1"
+				log.Println(len(class.GetStudents()))
+			}
 			pdf.AddUTF8Font("Roboto", "", "pdf/Roboto-Regular.ttf")
 			pdf.AddUTF8Font("Roboto-Bold", "", "pdf/Roboto-Bold.ttf")
 
