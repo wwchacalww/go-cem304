@@ -31,6 +31,15 @@ func (repo *StudentRepository) FindById(id string) (model.StudentInterface, erro
 	return study, nil
 }
 
+func (repo *StudentRepository) FindByEducar(educar int64) (model.StudentInterface, error) {
+	study, err := repo.Persistence.FindByEducar(educar)
+	if err != nil {
+		return &model.Student{}, err
+	}
+
+	return study, nil
+}
+
 func (repo *StudentRepository) FindByName(name string) ([]model.StudentInterface, error) {
 	Students, err := repo.Persistence.FindByName(name)
 	if err != nil {
