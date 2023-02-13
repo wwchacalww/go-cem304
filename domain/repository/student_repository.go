@@ -18,6 +18,7 @@ type StudentInput struct {
 type StudentRepositoryInterface interface {
 	Create(input StudentInput) (model.StudentInterface, error)
 	FindById(id string) (model.StudentInterface, error)
+	FindByEducar(educar int64) (model.StudentInterface, error)
 	FindByName(name string) ([]model.StudentInterface, error)
 	List(classroom_id string) ([]model.StudentInterface, error)
 	Enable(id string) (model.StudentInterface, error)
@@ -30,6 +31,7 @@ type StudentRepositoryInterface interface {
 type StudentPersistence interface {
 	Create(study StudentInput) (model.StudentInterface, error)
 	FindById(id string) (model.StudentInterface, error)
+	FindByEducar(educar int64) (model.StudentInterface, error)
 	FindByName(name string) ([]model.StudentInterface, error)
 	List(classroom_id string) ([]model.StudentInterface, error)
 	Enable(id string) (model.StudentInterface, error)

@@ -181,6 +181,67 @@ func (std *StudentDB) FindById(id string) (model.StudentInterface, error) {
 	return &student, nil
 }
 
+func (std *StudentDB) FindByEducar(educar int64) (model.StudentInterface, error) {
+	var student model.Student
+	var classroom_id string
+
+	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, created_at, students.updated_at"
+	stmt, err := std.db.Prepare("SELECT " + std_fields + " from students WHERE ieducar = $1")
+	if err != nil {
+		return nil, err
+	}
+
+	err = stmt.QueryRow(educar).Scan(
+		&student.ID,
+		&student.Name,
+		&student.BirthDay,
+		&student.Gender,
+		&student.ANNE,
+		&student.Note,
+		&student.Educar,
+		&student.EducaDF,
+		&classroom_id,
+		&student.Status,
+		&student.CreatedAt,
+		&student.UpdatedAt,
+	)
+	stmt.Close()
+
+	if classroom_id != "" {
+		var class model.Classroom
+		class_fields := "id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at"
+
+		classStmt, err := std.db.Prepare("SELECT " + class_fields + " from classrooms where id=$1")
+		if err != nil {
+			return nil, err
+		}
+
+		err = classStmt.QueryRow(classroom_id).Scan(
+			&class.ID,
+			&class.Name,
+			&class.Level,
+			&class.Grade,
+			&class.Shift,
+			&class.Description,
+			&class.ANNE,
+			&class.Year,
+			&class.Status,
+			&class.CreatedAt,
+			&class.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		student.Classroom = &class
+		classStmt.Close()
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	return &student, nil
+}
+
 func (std *StudentDB) FindByName(name string) ([]model.StudentInterface, error) {
 	startDate := time.Date(time.Now().Year(), time.January, 1, 12, 15, 5, 5, time.Local)
 	var classrooms []model.Classroom

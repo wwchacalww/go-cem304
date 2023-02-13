@@ -2,11 +2,15 @@ package handler
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"wwchacalww/go-cem304/domain/repository"
 	"wwchacalww/go-cem304/domain/utils"
 	"wwchacalww/go-cem304/usecase/check"
+	reportpdf "wwchacalww/go-cem304/usecase/report-pdf"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -24,10 +28,12 @@ func MakeStudentHandlers(r *chi.Mux, repo repository.StudentRepositoryInterface)
 		r.Post("/", handler.Store)
 		r.Post("/import", handler.Import)
 		r.Get("/{id}", handler.GetStudent)
+		r.Get("/educar/{id}", handler.FindByEducar)
 		r.Get("/search", handler.FindByName)
 		r.Get("/list", handler.List)
 		r.Put("/change", handler.ChangeClassroom)
 		r.Put("/checkclass", handler.CheckStudentsInClass)
+		r.Post("/statement/schooling", handler.StatementSchooling)
 		// r.Patch("/enable/{id}", handler.Enable)
 		// r.Patch("/disable/{id}", handler.Disable)
 		// r.Patch("/anne", handler.ANNE)
@@ -85,6 +91,26 @@ func (s *StudentHandler) ChangeClassroom(w http.ResponseWriter, r *http.Request)
 func (s *StudentHandler) GetStudent(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	student, err := s.Repo.FindById(id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	err = json.NewEncoder(w).Encode(student)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (s *StudentHandler) FindByEducar(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	log.Println(id)
+	educar, err := strconv.ParseInt(id, 10, 64)
+	log.Println(educar)
+	student, err := s.Repo.FindByEducar(educar)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))
@@ -262,6 +288,56 @@ func (s *StudentHandler) CheckStudentsInClass(w http.ResponseWriter, r *http.Req
 	}
 	log.Println(output)
 	err = json.NewEncoder(w).Encode(output)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (s *StudentHandler) StatementSchooling(w http.ResponseWriter, r *http.Request) {
+	var input reportpdf.InputSS
+	err := json.NewDecoder(r.Body).Decode(&input)
+	student, err := s.Repo.FindByEducar(input.Educar)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	var inputState reportpdf.InputStatementSchooling
+	inputState.Student = student
+	inputState.Matricula = input.Matricula
+	inputState.FathersName = input.FathersName
+	inputState.MothersName = input.MothersName
+	inputState.Address = input.Address
+	inputState.Phones = input.Phones
+	inputState.Nationality = input.Nationality
+	inputState.Birthplace = input.Birthplace
+	inputState.CPF = input.CPF
+	inputState.Neighborhood = input.Neighborhood
+	inputState.City = input.City
+	inputState.ParentCPF = input.ParentCPF
+
+	err = reportpdf.StatementSchooling(inputState)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	fileD, err := os.Open("pdf/statement-" + student.GetID() + ".pdf")
+	if err != nil {
+		log.Panic(err)
+	}
+	_, err = ioutil.ReadAll(fileD)
+	if err != nil {
+		log.Panic(err)
+	}
+	// w.Header().Add("content-type", "application/pdf")
+	// w.Write(file_bytes)
+	err = json.NewEncoder(w).Encode(inputState)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))
