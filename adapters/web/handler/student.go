@@ -33,7 +33,7 @@ func MakeStudentHandlers(r *chi.Mux, repo repository.StudentRepositoryInterface)
 		r.Get("/list", handler.List)
 		r.Put("/change", handler.ChangeClassroom)
 		r.Put("/checkclass", handler.CheckStudentsInClass)
-		r.Get("/statement/schooling/{id}", handler.StatementSchooling)
+		r.Post("/statement/schooling", handler.StatementSchooling)
 		// r.Patch("/enable/{id}", handler.Enable)
 		// r.Patch("/disable/{id}", handler.Disable)
 		// r.Patch("/anne", handler.ANNE)
@@ -297,41 +297,45 @@ func (s *StudentHandler) CheckStudentsInClass(w http.ResponseWriter, r *http.Req
 }
 
 func (s *StudentHandler) StatementSchooling(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	log.Println(id)
-	educar, err := strconv.ParseInt(id, 10, 64)
-	// var input reportpdf.InputSS
-	// err := json.NewDecoder(r.Body).Decode(&input)
-	student, err := s.Repo.FindByEducar(educar)
+	// id := chi.URLParam(r, "id")
+	// log.Println(id)
+	// educar, err := strconv.ParseInt(id, 10, 64)
+	var input reportpdf.InputSS
+	err := json.NewDecoder(r.Body).Decode(&input)
+	student, err := s.Repo.FindByEducar(input.Educar)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))
 		return
 	}
+
 	var inputState reportpdf.InputStatementSchooling
 	inputState.Student = student
-	// inputState.Matricula = input.Matricula
-	// inputState.FathersName = input.FathersName
-	// inputState.MothersName = input.MothersName
-	// inputState.Address = input.Address
-	// inputState.Phones = input.Phones
-	// inputState.Nationality = input.Nationality
-	// inputState.Birthplace = input.Birthplace
-	// inputState.CPF = input.CPF
-	// inputState.Neighborhood = input.Neighborhood
-	// inputState.City = input.City
-	// inputState.ParentCPF = input.ParentCPF
-	inputState.Matricula = "55555-5"
-	inputState.FathersName = "Fulando de Tal"
-	inputState.MothersName = "Maria da Silva"
-	inputState.Address = "QR 304 conjunto 13 casa 6"
-	inputState.Phones = "(61) 9999-9999"
-	inputState.Nationality = "Brasileira"
-	inputState.Birthplace = "Brasília-DF"
-	inputState.CPF = "111.111.111-11"
-	inputState.Neighborhood = "Samambaia Sul"
-	inputState.City = "Samambaia"
-	inputState.ParentCPF = "222.222.222-22"
+	inputState.Matricula = input.Matricula
+	inputState.FathersName = input.FathersName
+	inputState.MothersName = input.MothersName
+	inputState.Address = input.Address
+	inputState.CEP = input.CEP
+	inputState.PhoneOne = input.PhoneOne
+	inputState.PhoneTwo = input.PhoneTwo
+	inputState.PhoneThree = input.PhoneThree
+	inputState.Nationality = input.Nationality
+	inputState.Birthplace = input.Birthplace
+	inputState.CPF = input.CPF
+	inputState.Neighborhood = input.Neighborhood
+	inputState.City = input.City
+	inputState.ParentCPF = input.ParentCPF
+	// inputState.Matricula = "55555-5"
+	// inputState.FathersName = "Fulando de Tal"
+	// inputState.MothersName = "Maria da Silva"
+	// inputState.Address = "QR 304 conjunto 13 casa 6"
+	// inputState.Phones = "(61) 9999-9999"
+	// inputState.Nationality = "Brasileira"
+	// inputState.Birthplace = "Brasília-DF"
+	// inputState.CPF = "111.111.111-11"
+	// inputState.Neighborhood = "Samambaia Sul"
+	// inputState.City = "Samambaia"
+	// inputState.ParentCPF = "222.222.222-22"
 
 	err = reportpdf.StatementSchooling(inputState)
 
@@ -345,17 +349,17 @@ func (s *StudentHandler) StatementSchooling(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		log.Panic(err)
 	}
-	file_bytes, err := ioutil.ReadAll(fileD)
+	_, err = ioutil.ReadAll(fileD)
 	if err != nil {
 		log.Panic(err)
 	}
-	w.Header().Add("content-type", "application/pdf")
-	w.Write(file_bytes)
-	// err = json.NewEncoder(w).Encode(inputState)
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// 	w.Write(jsonError(err.Error()))
-	// 	return
-	// }
-	// w.WriteHeader(http.StatusCreated)
+	// w.Header().Add("content-type", "application/pdf")
+	// w.Write(file_bytes)
+	err = json.NewEncoder(w).Encode(inputState)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
 }
