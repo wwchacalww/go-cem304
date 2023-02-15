@@ -36,6 +36,7 @@ func MakeClassroomHandlers(r *chi.Mux, repo repository.ClassroomRepositoryInterf
 		r.Get("/report/all/", handler.AllClassroomsPDF)
 		r.Get("/report/diary/{id}", handler.DiaryClassPDF)
 		r.Get("/report/diary/all/", handler.DiaryAllClassroomsPDF)
+		r.Get("/report/cover/{id}", handler.FolderCoverPDF)
 	})
 }
 
@@ -361,5 +362,33 @@ func (c *ClassroomHandler) DiaryAllClassroomsPDF(w http.ResponseWriter, r *http.
 	w.Header().Add("content-type", "application/pdf")
 	w.Write(file_bytes)
 	os.Remove("pdf/diary_all_classrooms.pdf")
+}
 
+func (c *ClassroomHandler) FolderCoverPDF(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	class, err := c.Repo.FindById(id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	err = reportpdf.FolderCoverClass(class)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	fileD, err := os.Open("pdf/folderCover.pdf")
+	if err != nil {
+		log.Panic(err)
+	}
+	file_bytes, err := ioutil.ReadAll(fileD)
+	if err != nil {
+		log.Panic(err)
+	}
+	w.Header().Add("content-type", "application/pdf")
+	w.Write(file_bytes)
+	os.Remove("pdf/folderCover.pdf")
 }

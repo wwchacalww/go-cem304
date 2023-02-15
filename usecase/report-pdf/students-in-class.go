@@ -333,3 +333,86 @@ func DiaryAllClass(classrooms []model.ClassroomInterface) error {
 	err := pdf.OutputFileAndClose("pdf/diary_all_classrooms.pdf")
 	return err
 }
+
+func FolderCoverClass(class model.ClassroomInterface) error {
+	pdf := gofpdf.New("L", "mm", "A4", "")
+
+	pdf.AddPage()
+	pdf.AddUTF8Font("Roboto", "", "pdf/Roboto-Regular.ttf")
+	pdf.AddUTF8Font("Roboto-Bold", "", "pdf/Roboto-Bold.ttf")
+
+	for i, std := range class.GetStudents() {
+		if i != 0 && i%2 == 0 {
+			pdf.AddPage()
+		}
+		pdf.SetFont("Roboto-Bold", "", 12)
+		pdf.CellFormat(260, 4, "", "LTR", 1, "C", false, 0, "")
+
+		pdf.CellFormat(25, 6, "Código", "L", 0, "C", false, 0, "")
+		pdf.SetFont("Roboto", "", 12)
+		txt := strconv.FormatInt(std.GetEducar(), 10)
+		pdf.CellFormat(160, 6, txt, "0", 0, "L", false, 0, "")
+		pdf.SetFont("Roboto-Bold", "", 12)
+		txt = "Data de Nascimento"
+		pdf.CellFormat(45, 6, txt, "0", 0, "C", false, 0, "")
+		pdf.SetFont("Roboto", "", 12)
+		txt = std.GetBirthDay().Format("02/01/2006")
+		pdf.CellFormat(30, 6, txt, "R", 1, "C", false, 0, "")
+
+		pdf.SetFont("Roboto-Bold", "", 12)
+		pdf.CellFormat(25, 8, "Nome", "L", 0, "C", false, 0, "")
+		pdf.SetFont("Roboto", "", 16)
+		txt = std.GetName()
+		pdf.CellFormat(235, 8, txt, "R", 1, "L", false, 0, "")
+
+		pdf.CellFormat(260, 4, "", "LR", 1, "L", false, 0, "")
+
+		pdf.SetFont("Roboto-Bold", "", 12)
+		pdf.CellFormat(25, 6, "Ano", "LB", 0, "C", false, 0, "")
+		pdf.CellFormat(75, 6, "Turma", "B", 0, "C", false, 0, "")
+		pdf.CellFormat(70, 6, "Situação", "B", 0, "C", false, 0, "")
+		pdf.CellFormat(90, 6, "Observação", "BR", 1, "L", false, 0, "")
+
+		pdf.SetFont("Roboto", "", 16)
+		pdf.CellFormat(25, 8, "2023", "1", 0, "C", false, 0, "")
+		txt = class.GetName()[0:9]
+		pdf.CellFormat(75, 8, txt, "1", 0, "L", false, 0, "")
+		pdf.CellFormat(70, 8, "", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(90, 8, "", "LR", 1, "L", false, 0, "")
+
+		pdf.CellFormat(25, 8, "2024", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(75, 8, "", "1", 0, "L", false, 0, "")
+		pdf.CellFormat(70, 8, "", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(90, 8, "", "LR", 1, "L", false, 0, "")
+
+		pdf.CellFormat(25, 8, "2025", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(75, 8, "", "1", 0, "L", false, 0, "")
+		pdf.CellFormat(70, 8, "", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(90, 8, "", "LR", 1, "L", false, 0, "")
+
+		pdf.CellFormat(170, 4, "", "L", 0, "L", false, 0, "")
+		pdf.CellFormat(90, 4, "", "LR", 1, "L", false, 0, "")
+
+		pdf.SetFont("Roboto-Bold", "", 12)
+		pdf.CellFormat(25, 8, "ANEE", "L", 0, "C", false, 0, "")
+		pdf.CellFormat(145, 8, "", "0", 0, "L", false, 0, "")
+		pdf.CellFormat(90, 8, "", "LR", 1, "L", false, 0, "")
+
+		pdf.SetFont("Roboto", "", 12)
+		txtAnne := ""
+		if std.GetANNE() == "" {
+			txt = "NÃO"
+		} else {
+			txt = "SIM"
+			txtAnne = std.GetANNE()
+		}
+		pdf.CellFormat(25, 8, txt, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(145, 8, txtAnne, "1", 0, "L", false, 0, "")
+		pdf.CellFormat(90, 8, "", "LBR", 1, "L", false, 0, "")
+		pdf.Ln(20)
+
+	}
+
+	err := pdf.OutputFileAndClose("pdf/folderCover.pdf")
+	return err
+}
