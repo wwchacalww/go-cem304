@@ -47,7 +47,7 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [ ] Desactivate Students
    - [X] Import file csv and registry Classrooms
    - [X] Change Classroom
-   - [ ] Update Classroom in mass
+   - [X] Check Students on Classrooms in mass
 ## Domains - Classrooms
  - [X] Create entity
  - [X] Test entity classroom
@@ -66,4 +66,4 @@ Repository for studying and practicing GOLANG applied in a school management sys
 ## PDF report generator
  - [X] Create a function for generator PDF
  - [X] Create student's list in pdf
- - [ ] Diary Class in pdf
+ - [X] Diary Class in pdf

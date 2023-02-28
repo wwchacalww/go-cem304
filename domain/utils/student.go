@@ -47,7 +47,6 @@ func CsvToStudents(f multipart.File) ([]repository.StudentInput, error) {
 }
 
 func StudentsInClass(f multipart.File, classroom_id string) ([]InputCheckStudentInClass, error) {
-
 	var list []InputCheckStudentInClass
 	csvReader := csv.NewReader(f)
 	csvReader.Comma = ';'
@@ -65,6 +64,32 @@ func StudentsInClass(f multipart.File, classroom_id string) ([]InputCheckStudent
 				}
 			}
 			rec.ClassroomID = classroom_id
+			list = append(list, rec)
+		}
+	}
+
+	return list, nil
+}
+
+func StudentsInClassrooms(f multipart.File) ([]InputCheckStudentInClass, error) {
+	var list []InputCheckStudentInClass
+	csvReader := csv.NewReader(f)
+	csvReader.Comma = ';'
+	data, err := csvReader.ReadAll()
+	if err != nil {
+		return []InputCheckStudentInClass{}, err
+	}
+	for _, line := range data {
+		if len(line) == 2 {
+			var rec InputCheckStudentInClass
+			for j, field := range line {
+				switch {
+				case j == 0:
+					rec.ClassroomID = field
+				case j == 1:
+					rec.Educar, _ = strconv.ParseInt(field, 10, 64)
+				}
+			}
 			list = append(list, rec)
 		}
 	}

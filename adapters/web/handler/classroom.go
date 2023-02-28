@@ -9,6 +9,7 @@ import (
 	"wwchacalww/go-cem304/domain/model"
 	"wwchacalww/go-cem304/domain/repository"
 	"wwchacalww/go-cem304/domain/utils"
+	"wwchacalww/go-cem304/usecase/check"
 	reportpdf "wwchacalww/go-cem304/usecase/report-pdf"
 
 	"github.com/go-chi/chi/v5"
@@ -32,6 +33,7 @@ func MakeClassroomHandlers(r *chi.Mux, repo repository.ClassroomRepositoryInterf
 		r.Patch("/enable/{id}", handler.Enable)
 		r.Patch("/disable/{id}", handler.Disable)
 		r.Patch("/anne", handler.ANNE)
+		r.Put("/checkclassrooms", handler.CheckStudentsInClassrooms)
 		r.Get("/report/{id}", handler.StudentsInClassPDF)
 		r.Get("/report/all/", handler.AllClassroomsPDF)
 		r.Get("/report/diary/{id}", handler.DiaryClassPDF)
@@ -241,8 +243,6 @@ func (c *ClassroomHandler) List(w http.ResponseWriter, r *http.Request) {
 		class = append(class, classroom)
 	}
 
-	err = reportpdf.ReportAllClass(class)
-
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))
@@ -391,4 +391,56 @@ func (c *ClassroomHandler) FolderCoverPDF(w http.ResponseWriter, r *http.Request
 	w.Header().Add("content-type", "application/pdf")
 	w.Write(file_bytes)
 	os.Remove("pdf/folderCover.pdf")
+}
+
+func (c *ClassroomHandler) CheckStudentsInClassrooms(w http.ResponseWriter, r *http.Request) {
+	f, fh, err := r.FormFile("file")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	ct := fh.Header.Get("Content-Type")
+	if ct != "text/csv" {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError("File type invalid"))
+		return
+	}
+	defer f.Close()
+	list, err := utils.StudentsInClassrooms(f)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	classrooms, err := c.Repo.List("2023")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	var class []model.ClassroomInterface
+	for _, cl := range classrooms {
+		classroom, err := c.Repo.FindById(cl.GetID())
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(jsonError(err.Error()))
+			return
+		}
+		class = append(class, classroom)
+	}
+	output, err := check.CheckAllStudentsAndClass(list, class)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	err = json.NewEncoder(w).Encode(output)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	w.WriteHeader(201)
 }

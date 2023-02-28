@@ -4,9 +4,15 @@ import (
 	"encoding/csv"
 	"fmt"
 	"mime/multipart"
+	"strconv"
 	"wwchacalww/go-cem304/domain/model"
 	"wwchacalww/go-cem304/domain/repository"
 )
+
+type CheckResult struct {
+	Result  bool   `json:"result"`
+	Message string `json:"message"`
+}
 
 func CsvToClassrooms(f multipart.File) ([]repository.ClassroomInput, error) {
 	var list []repository.ClassroomInput
@@ -49,4 +55,28 @@ func FindClassById(classrooms []model.Classroom, classroom_id string) (model.Cla
 		}
 	}
 	return model.Classroom{}, fmt.Errorf("Classroom not found")
+}
+
+func CheckStudentInClassrooms(list []InputCheckStudentInClass, ieducar int64, classroom_id string) (CheckResult, error) {
+	var result CheckResult
+	if len(list) == 0 {
+		return result, fmt.Errorf("list invalid")
+	}
+
+	result.Result = false
+	result.Message = strconv.FormatInt(ieducar, 10) + "<->" + classroom_id + " NÃO ENCONTRADO"
+	for _, std := range list {
+		if std.Educar == ieducar {
+			if std.ClassroomID == classroom_id {
+				result.Result = true
+				result.Message = "OK"
+				return result, nil
+			}
+			result.Result = false
+			result.Message = strconv.FormatInt(std.Educar, 10) + " <-> " + std.ClassroomID + " != " + classroom_id
+			return result, nil
+		}
+	}
+
+	return result, nil
 }
