@@ -4,9 +4,9 @@ go 1.20
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
+	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi/v5 v5.0.8
-	github.com/go-chi/render v1.0.2
-	github.com/golang/mock v1.6.0
+	github.com/go-chi/jwtauth/v5 v5.1.0
 	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/rs/cors v1.8.3
@@ -16,7 +16,17 @@ require (
 	golang.org/x/crypto v0.5.0
 )
 
-require github.com/ajg/form v1.5.1 // indirect
+require (
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
+	github.com/goccy/go-json v0.9.11 // indirect
+	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
+	github.com/lestrrat-go/httpcc v1.0.1 // indirect
+	github.com/lestrrat-go/httprc v1.0.4 // indirect
+	github.com/lestrrat-go/iter v1.0.2 // indirect
+	github.com/lestrrat-go/jwx/v2 v2.0.6 // indirect
+	github.com/lestrrat-go/option v1.0.0 // indirect
+	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
+)
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

@@ -1,21 +1,21 @@
-package application_test
+package model_test
 
 import (
 	"log"
 	"testing"
-	"wwchacalww/go-cem304/application"
+	"wwchacalww/go-cem304/domain/model"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestIsValid_Valid(t *testing.T) {
-	user := application.NewUser()
+	user := model.NewUser()
 	user.Name = "Test Name"
 	user.Email = "test@email.com"
 	user.Password = "passwordTest"
 	user.Role = "TestRole"
 
-	log.Println(user.GetID())
+	log.Println(user.GetAvatarUrl())
 	require.NotNil(t, user.GetID())
 	require.Equal(t, user.GetName(), "Test Name")
 	require.Equal(t, user.GetRole(), "TestRole")
@@ -27,7 +27,7 @@ func TestIsValid_Valid(t *testing.T) {
 }
 
 func TestIsValid_Invalid(t *testing.T) {
-	user := application.NewUser()
+	user := model.NewUser()
 	user.Name = "Tes"
 	user.Email = "wrong-email"
 	user.Password = "pas"

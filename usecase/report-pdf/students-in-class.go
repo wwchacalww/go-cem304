@@ -8,6 +8,15 @@ import (
 	"github.com/jung-kurt/gofpdf"
 )
 
+type ReportClassroom struct {
+	Classroom string `json:"classroom"`
+	Group     string `json:"group"`
+	Quantity  int    `json:"quantity"`
+	Female    int    `json:"female"`
+	Male      int    `json:"male"`
+	ANEE      int    `json:"anee"`
+}
+
 func StudentsInClass(class model.ClassroomInterface) error {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddPage()

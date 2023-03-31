@@ -2,29 +2,28 @@ package cli
 
 import (
 	"fmt"
-	"wwchacalww/go-cem304/application"
-	"wwchacalww/go-cem304/application/dto"
+	"wwchacalww/go-cem304/domain/repository"
 )
 
-func Run(service application.UserServiceInterface, action string, userId string, userName string, userEmail string, userPassword string, userRole string) (string, error) {
+func Run(repo repository.UserRepositoryInterface, action string, userId string, userName string, userEmail string, userPassword string, userRole string) (string, error) {
 	var result = ""
 
 	switch action {
 	case "create":
-		var input dto.UserInput
+		var input repository.UserInput
 		input.Name = userName
 		input.Email = userEmail
 		input.Password = userPassword
 		input.Role = userRole
 
-		user, err := service.Create(input)
+		user, err := repo.Create(input)
 		if err != nil {
 			return result, err
 		}
 		result = fmt.Sprintf("User ID %s with name %s and email %s has beenn created!", user.GetID(), user.GetName(), user.GetEmail())
 		return result, err
 	case "list":
-		res, err := service.List()
+		res, err := repo.List()
 		if err != nil {
 			return result, err
 		}
@@ -35,7 +34,7 @@ func Run(service application.UserServiceInterface, action string, userId string,
 		}
 		return result, err
 	default:
-		res, err := service.FindByEmail(userEmail)
+		res, err := repo.FindByEmail(userEmail)
 		if err != nil {
 			return result, err
 		}

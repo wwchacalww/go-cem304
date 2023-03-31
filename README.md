@@ -23,10 +23,15 @@ Repository for studying and practicing GOLANG applied in a school management sys
  - [X] Create jsonError to manipulate messages errors
  - [X] Create User handler server
    - [X] Create user
-   - [ ] Get user
+   - [X] Get user
    - [X] List users
-   - [ ] Activate user
-   - [ ] Desactivate user
+   - [X] Change role
+   - [X] Change password
+   - [X] Change avatar
+ - [X] Auth handler
+   - [X] Login
+   - [X] Refreshtoken
+   - [X] Authentication and authorization
  - [X] Create Classroom handler server
    - [X] Create Classroom
    - [X] Get by id Classroom
@@ -48,6 +53,21 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [X] Import file csv and registry Classrooms
    - [X] Change Classroom
    - [X] Check Students on Classrooms in mass
+
+## Domains - Users
+ - [X] Create entity
+ - [X] Test entity classroom
+ - [X] Create repository classroom
+ - [X] Create persistence db and test
+ - [X] Create table on postgresql
+ - [X] Create cli with cobra-cli
+  ## RefreshTokens
+  - [X] Create entity
+  - [X] Test entity classroom
+  - [X] Create repository classroom
+  - [X] Create persistence db and test
+  - [X] Create table on postgresql
+
 ## Domains - Classrooms
  - [X] Create entity
  - [X] Test entity classroom
