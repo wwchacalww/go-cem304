@@ -7,7 +7,6 @@ import (
 	"database/sql"
 	"os"
 	"wwchacalww/go-cem304/adapters/db"
-	"wwchacalww/go-cem304/application"
 	"wwchacalww/go-cem304/usecase/repository"
 
 	_ "github.com/lib/pq"
@@ -17,10 +16,13 @@ import (
 
 var connStr = "postgres://postgres:postgres@db:5432/cem304?sslmode=disable"
 var drv, _ = sql.Open("postgres", connStr)
+var authDb = db.NewAuthDB(drv)
 var userDb = db.NewUserDB(drv)
 var classDb = db.NewClassroomDB(drv)
 var studentDb = db.NewStudentDB(drv)
-var userService = application.UserService{Persistence: userDb}
+
+var authRepository = repository.AuthRepository{Persistence: authDb}
+var userRepository = repository.UserRepository{Persistence: userDb}
 var classroomRepository = repository.ClassroomRepository{Persistence: classDb}
 var studentRepository = repository.StudentRepository{Persistence: studentDb}
 

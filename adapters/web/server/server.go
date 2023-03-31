@@ -3,7 +3,6 @@ package server
 import (
 	"net/http"
 	"wwchacalww/go-cem304/adapters/web/handler"
-	"wwchacalww/go-cem304/application"
 	"wwchacalww/go-cem304/domain/repository"
 
 	"github.com/go-chi/chi/v5"
@@ -12,7 +11,8 @@ import (
 )
 
 type WebServer struct {
-	UsersService        application.UserServiceInterface
+	AuthRepository      repository.AuthRepositoryInterface
+	UserRepository      repository.UserRepositoryInterface
 	ClassroomRepository repository.ClassroomRepositoryInterface
 	StudentRepository   repository.StudentRepositoryInterface
 }
@@ -35,7 +35,8 @@ func (w WebServer) Server() {
 	})
 	r.Use(c.Handler)
 	r.Use(middleware.Logger)
-	handler.MakeUserHandlers(r, w.UsersService)
+	handler.MakeAuthHandlers(r, w.AuthRepository)
+	handler.MakeUserHandlers(r, w.UserRepository)
 	handler.MakeClassroomHandlers(r, w.ClassroomRepository)
 	handler.MakeStudentHandlers(r, w.StudentRepository)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
