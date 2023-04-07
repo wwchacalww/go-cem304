@@ -87,3 +87,9 @@ Repository for studying and practicing GOLANG applied in a school management sys
  - [X] Create a function for generator PDF
  - [X] Create student's list in pdf
  - [X] Diary Class in pdf
+
+## Utils tools
+ - [ ] Read and save data of reports
+   - [ ] Create a function read reports students
+   - [ ] Create a function on repository to save data
+   - [ ] Create handler for import reports
