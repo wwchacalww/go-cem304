@@ -314,6 +314,78 @@ func (std *StudentDB) FindByName(name string) ([]model.StudentInterface, error) 
 	return students, nil
 }
 
+func (std *StudentDB) FindByParent(name string) ([]model.StudentInterface, error) {
+	startDate := time.Date(time.Now().Year(), time.January, 1, 12, 15, 5, 5, time.Local)
+	var classrooms []model.Classroom
+	class_fields := "id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at"
+	classRows, err := std.db.Query("SELECT "+class_fields+" from classrooms WHERE created_at > $1", startDate)
+	if err != nil {
+		return nil, err
+	}
+	defer classRows.Close()
+	for classRows.Next() {
+		var class model.Classroom
+		err = classRows.Scan(
+			&class.ID,
+			&class.Name,
+			&class.Level,
+			&class.Grade,
+			&class.Shift,
+			&class.Description,
+			&class.ANNE,
+			&class.Year,
+			&class.Status,
+			&class.CreatedAt,
+			&class.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		classrooms = append(classrooms, class)
+	}
+
+	var students []model.StudentInterface
+	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, created_at, students.updated_at"
+	rows, err := std.db.Query("SELECT "+std_fields+" from students where name like $1 ORDER BY name ASC", "%"+name+"%")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var student model.Student
+		var classroom_id string
+		err = rows.Scan(
+			&student.ID,
+			&student.Name,
+			&student.BirthDay,
+			&student.Gender,
+			&student.ANNE,
+			&student.Note,
+			&student.Educar,
+			&student.EducaDF,
+			&classroom_id,
+			&student.Status,
+			&student.CreatedAt,
+			&student.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if classroom_id != "" {
+			xpto, err := utils.FindClassById(classrooms, classroom_id)
+			if err != nil {
+				return nil, err
+			}
+			student.Classroom = &xpto
+		}
+		students = append(students, &student)
+	}
+
+	return students, nil
+}
+
 func (std *StudentDB) List(classroom_id string) ([]model.StudentInterface, error) {
 	var class model.Classroom
 	classStmt, err := std.db.Prepare("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at from classrooms where id=$1")

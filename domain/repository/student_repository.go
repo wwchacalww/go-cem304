@@ -13,6 +13,15 @@ type StudentInput struct {
 	Educar      int64  `json:"ieducar"`
 	EducaDF     string `json:"educa_df"`
 	ClassroomID string `json:"classroom_id"`
+	Status      bool   `json:"status"`
+	Address     string `json:"address"`
+	City        string `json:"city"`
+	CEP         string `json:"cep"`
+	Fones       string `json:"fones"`
+	CPF         string `json:"cpf"`
+	Father      string `json:"father"`
+	Mother      string `json:"mother"`
+	Responsible string `json:"responsible"`
 }
 
 type StudentRepositoryInterface interface {
@@ -20,6 +29,7 @@ type StudentRepositoryInterface interface {
 	FindById(id string) (model.StudentInterface, error)
 	FindByEducar(educar int64) (model.StudentInterface, error)
 	FindByName(name string) ([]model.StudentInterface, error)
+	FindByParent(name string) ([]model.StudentInterface, error)
 	List(classroom_id string) ([]model.StudentInterface, error)
 	Enable(id string) (model.StudentInterface, error)
 	Disable(id string) (model.StudentInterface, error)
@@ -33,6 +43,7 @@ type StudentPersistence interface {
 	FindById(id string) (model.StudentInterface, error)
 	FindByEducar(educar int64) (model.StudentInterface, error)
 	FindByName(name string) ([]model.StudentInterface, error)
+	FindByParent(name string) ([]model.StudentInterface, error)
 	List(classroom_id string) ([]model.StudentInterface, error)
 	Enable(id string) (model.StudentInterface, error)
 	Disable(id string) (model.StudentInterface, error)

@@ -20,7 +20,7 @@ type CheckResult struct {
 type Parent struct {
 	Name         string `json:"name"`
 	Relationship string `json:"relationship"`
-	Resposible   bool   `json:"responsible"`
+	Responsible  bool   `json:"responsible"`
 }
 
 type Input struct {
@@ -134,19 +134,19 @@ func ReportToStudents(f multipart.File) ([]Input, error) {
 			if len(l[0]) > 8 {
 				father.Name = l[0]
 				father.Relationship = "Pai"
-				father.Resposible = false
+				father.Responsible = false
 			}
 		case i%10 == 3:
 			if len(l[0]) > 8 {
 				mother.Name = l[0]
 				mother.Relationship = "Mãe"
-				mother.Resposible = false
+				mother.Responsible = false
 			}
 		case i%10 == 4:
 			if l[0] == father.Name {
-				father.Resposible = true
+				father.Responsible = true
 			} else {
-				mother.Resposible = true
+				mother.Responsible = true
 			}
 			input.Parents = []Parent{mother, father}
 		case i%10 == 5:

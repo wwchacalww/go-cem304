@@ -22,6 +22,13 @@ type StudentInterface interface {
 	GetEducaDF() string
 	GetClassroom() ClassroomInterface
 	GetStatus() bool
+	GetAdress() string
+	GetCity() string
+	GetCEP() string
+	GetFones() string
+	GetCPF() string
+	GetParents() []ParentInterface
+	AttachParent(parent Parent) error
 	GetCreatedAt() time.Time
 	GetUpdatedAt() time.Time
 	Enable() error
@@ -39,8 +46,14 @@ type Student struct {
 	EducaDF   string             `valid:"optional" json:"educa_df"`
 	Classroom ClassroomInterface `valid:"optional" json:"classroom"`
 	Status    bool               `valid:"optional" json:"status"`
-	CreatedAt time.Time          `valid:"optional" json:"created_at"`
-	UpdatedAt time.Time          `valid:"optional" json:"updated_at"`
+	Address   string             `valid:"optional" json:"address"`
+	City      string             `valid:"optional" json:"city"`
+	CEP       string             `valid:"optional" json:"cep"`
+	Fones     string             `valid:"optional" json:"fones"`
+	CPF       string             `valid:"optional" json:"cpf"`
+	Parents   []ParentInterface
+	CreatedAt time.Time `valid:"optional" json:"created_at"`
+	UpdatedAt time.Time `valid:"optional" json:"updated_at"`
 }
 
 func NewStudent(name, bd string, educar int64) (*Student, error) {
@@ -142,5 +155,38 @@ func (s *Student) Enable() error {
 
 func (s *Student) Disable() error {
 	s.Status = false
+	return nil
+}
+
+func (s *Student) GetAdress() string {
+	return s.Address
+}
+
+func (s *Student) GetCity() string {
+	return s.City
+}
+
+func (s *Student) GetCEP() string {
+	return s.CEP
+}
+
+func (s *Student) GetFones() string {
+	return s.Fones
+}
+
+func (s *Student) GetCPF() string {
+	return s.CPF
+}
+
+func (s *Student) GetParents() []ParentInterface {
+	return s.Parents
+}
+
+func (s *Student) AttachParent(parent Parent) error {
+	if s.Parents == nil {
+		s.Parents = []ParentInterface{&parent}
+		return nil
+	}
+	s.Parents = append(s.Parents, &parent)
 	return nil
 }
