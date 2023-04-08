@@ -49,6 +49,15 @@ func (repo *StudentRepository) FindByName(name string) ([]model.StudentInterface
 	return Students, nil
 }
 
+func (repo *StudentRepository) FindByParent(name string) ([]model.StudentInterface, error) {
+	Students, err := repo.Persistence.FindByParent(name)
+	if err != nil {
+		return nil, err
+	}
+
+	return Students, nil
+}
+
 func (repo *StudentRepository) List(classroom_id string) ([]model.StudentInterface, error) {
 	result, err := repo.Persistence.List(classroom_id)
 	if err != nil {

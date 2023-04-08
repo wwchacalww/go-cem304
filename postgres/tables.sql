@@ -47,6 +47,11 @@ CREATE TABLE IF NOT EXISTS students (
 	educa_df VARCHAR NULL,
 	classroom_id uuid NULL REFERENCES classrooms (id),
 	status bool NOT NULL DEFAULT true,
+	address VARCHAR NULL,
+	city VARCHAR NULL,
+	cep VARCHAR NULL,
+	fones VARCHAR NULL,
+	cpf VARCHAR NULL,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (id)

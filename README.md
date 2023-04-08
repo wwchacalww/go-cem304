@@ -83,6 +83,13 @@ Repository for studying and practicing GOLANG applied in a school management sys
  - [X] Create persistence db and test
  - [X] Create table on postgresql
 
+## Domains - Parent
+ - [ ] Create entity
+ - [ ] Test entity classroom
+ - [ ] Create repository classroom
+ - [ ] Create persistence db and test
+ - [ ] Create table on postgresql
+
 ## PDF report generator
  - [X] Create a function for generator PDF
  - [X] Create student's list in pdf
