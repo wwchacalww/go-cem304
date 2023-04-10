@@ -25,7 +25,7 @@ type StudentInput struct {
 }
 
 type StudentRepositoryInterface interface {
-	Create(input StudentInput) (model.StudentInterface, error)
+	Save(input StudentInput) (model.StudentInterface, error)
 	FindById(id string) (model.StudentInterface, error)
 	FindByEducar(educar int64) (model.StudentInterface, error)
 	FindByName(name string) ([]model.StudentInterface, error)
@@ -35,11 +35,12 @@ type StudentRepositoryInterface interface {
 	Disable(id string) (model.StudentInterface, error)
 	ANNE(id, anne string) (model.StudentInterface, error)
 	AddMass(mass []StudentInput) ([]model.StudentInterface, error)
+	AddMassReport(mass []StudentInput) ([]model.StudentInterface, error)
 	ChangeClassroom(id, classroom_id string) error
 }
 
 type StudentPersistence interface {
-	Create(study StudentInput) (model.StudentInterface, error)
+	Save(study StudentInput) (model.StudentInterface, error)
 	FindById(id string) (model.StudentInterface, error)
 	FindByEducar(educar int64) (model.StudentInterface, error)
 	FindByName(name string) ([]model.StudentInterface, error)

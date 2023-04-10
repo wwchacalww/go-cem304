@@ -20,11 +20,13 @@ var authDb = db.NewAuthDB(drv)
 var userDb = db.NewUserDB(drv)
 var classDb = db.NewClassroomDB(drv)
 var studentDb = db.NewStudentDB(drv)
+var parentDb = db.NewParentDB(drv)
 
 var authRepository = repository.AuthRepository{Persistence: authDb}
 var userRepository = repository.UserRepository{Persistence: userDb}
 var classroomRepository = repository.ClassroomRepository{Persistence: classDb}
 var studentRepository = repository.StudentRepository{Persistence: studentDb}
+var parentRepository = repository.ParentRepository{Persistence: parentDb}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{

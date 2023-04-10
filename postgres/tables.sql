@@ -51,8 +51,25 @@ CREATE TABLE IF NOT EXISTS students (
 	city VARCHAR NULL,
 	cep VARCHAR NULL,
 	fones VARCHAR NULL,
-	cpf VARCHAR NULL,
+	cpf VARCHAR UNIQUE NULL,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS parents (
+	id uuid DEFAULT uuid_generate_v4 (),
+	name VARCHAR NOT NULL,
+	cpf VARCHAR UNIQUE NULL,
+	email VARCHAR NULL,
+	fones VARCHAR NULL,
+	PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS parents_students (
+	parent_id uuid REFERENCES parents (id) ON UPDATE CASCADE ON DELETE SET NULL,
+	student_id uuid REFERENCES students (id) ON UPDATE CASCADE ON DELETE SET NULL,
+	relationship VARCHAR NOT NULL,
+	responsible bool NOT NULL DEFAULT false,
+	CONSTRAINT parents_students_pk PRIMARY KEY (parent_id, student_id) -- explicit pk
+)

@@ -84,9 +84,9 @@ Repository for studying and practicing GOLANG applied in a school management sys
  - [X] Create table on postgresql
 
 ## Domains - Parent
- - [ ] Create entity
- - [ ] Test entity classroom
- - [ ] Create repository classroom
+ - [X] Create entity
+ - [X] Test entity classroom
+ - [X] Create repository Parent
  - [ ] Create persistence db and test
  - [ ] Create table on postgresql
 

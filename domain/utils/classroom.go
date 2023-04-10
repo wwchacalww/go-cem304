@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 	"wwchacalww/go-cem304/domain/model"
 	"wwchacalww/go-cem304/domain/repository"
 )
@@ -15,24 +14,6 @@ import (
 type CheckResult struct {
 	Result  bool   `json:"result"`
 	Message string `json:"message"`
-}
-
-type Parent struct {
-	Name         string `json:"name"`
-	Relationship string `json:"relationship"`
-	Responsible  bool   `json:"responsible"`
-}
-
-type Input struct {
-	Ieducar  int64     `json:"ieducar"`
-	Name     string    `json:"name"`
-	BirthDay time.Time `json:"birth_day"`
-	Address  string    `json:"address"`
-	City     string    `json:"city"`
-	CEP      string    `json:"CEP"`
-	Fones    string    `json:"fones"`
-	CPF      string    `json:"CPF"`
-	Parents  []Parent
 }
 
 func CsvToClassrooms(f multipart.File) ([]repository.ClassroomInput, error) {
@@ -102,10 +83,8 @@ func CheckStudentInClassrooms(list []InputCheckStudentInClass, ieducar int64, cl
 	return result, nil
 }
 
-func ReportToStudents(f multipart.File) ([]Input, error) {
-	var mother Parent
-	var father Parent
-	var result []Input
+func ReportToStudents(f multipart.File, classroom_id string) ([]repository.StudentInput, error) {
+	var result []repository.StudentInput
 
 	reader := csv.NewReader(f)
 	reader.Comma = '£'
@@ -113,7 +92,7 @@ func ReportToStudents(f multipart.File) ([]Input, error) {
 	if err != nil {
 		return nil, err
 	}
-	var input Input
+	var input repository.StudentInput
 	for i, l := range data {
 		switch {
 		case i%10 == 0:
@@ -122,7 +101,9 @@ func ReportToStudents(f multipart.File) ([]Input, error) {
 			if err != nil {
 				return nil, err
 			}
-			input.Ieducar = n
+			input.Educar = n
+			input.Status = true
+			input.ClassroomID = classroom_id
 		case i%10 == 1:
 			name, birth_date, err := ExtractNameAndBirthday(l[0])
 			if err != nil {
@@ -132,23 +113,18 @@ func ReportToStudents(f multipart.File) ([]Input, error) {
 			input.BirthDay = birth_date
 		case i%10 == 2:
 			if len(l[0]) > 8 {
-				father.Name = l[0]
-				father.Relationship = "Pai"
-				father.Responsible = false
+				input.Father = l[0]
 			}
 		case i%10 == 3:
 			if len(l[0]) > 8 {
-				mother.Name = l[0]
-				mother.Relationship = "Mãe"
-				mother.Responsible = false
+				input.Mother = l[0]
 			}
 		case i%10 == 4:
-			if l[0] == father.Name {
-				father.Responsible = true
+			if len(l[0]) > 8 {
+				input.Responsible = l[0]
 			} else {
-				mother.Responsible = true
+				input.Responsible = input.Mother
 			}
-			input.Parents = []Parent{mother, father}
 		case i%10 == 5:
 			input.Address = l[0]
 		case i%10 == 6:
@@ -165,9 +141,9 @@ func ReportToStudents(f multipart.File) ([]Input, error) {
 	return result, nil
 }
 
-func ExtractNameAndBirthday(str string) (string, time.Time, error) {
+func ExtractNameAndBirthday(str string) (string, string, error) {
 	name := ""
-	birth_day := time.Now()
+	birth_day := ""
 	strSplit := strings.Split(str, " ")
 	re := regexp.MustCompile(`[-]?\d[\d,]*[\.]?[\d{2}]*`)
 	for _, txt := range strSplit {
@@ -176,22 +152,9 @@ func ExtractNameAndBirthday(str string) (string, time.Time, error) {
 		} else {
 			dt := strings.Split(txt, "/")
 			if len(dt) != 3 {
-				return "", time.Now(), fmt.Errorf("Invalid date")
+				return "", "", fmt.Errorf("Invalid date")
 			}
-			y, err := strconv.Atoi(dt[2])
-			if err != nil {
-				return "", time.Now(), fmt.Errorf("Invalid date")
-			}
-			m, err := strconv.Atoi(dt[1])
-			if err != nil {
-				return "", time.Now(), fmt.Errorf("Invalid date")
-			}
-			d, err := strconv.Atoi(dt[0])
-
-			if err != nil {
-				return "", time.Now(), fmt.Errorf("Invalid date")
-			}
-			birth_day = time.Date(y, time.Month(m), d, 12, 15, 5, 5, time.Local)
+			birth_day = txt
 		}
 	}
 	return name, birth_day, nil

@@ -22,7 +22,7 @@ type StudentInterface interface {
 	GetEducaDF() string
 	GetClassroom() ClassroomInterface
 	GetStatus() bool
-	GetAdress() string
+	GetAddress() string
 	GetCity() string
 	GetCEP() string
 	GetFones() string
@@ -158,7 +158,7 @@ func (s *Student) Disable() error {
 	return nil
 }
 
-func (s *Student) GetAdress() string {
+func (s *Student) GetAddress() string {
 	return s.Address
 }
 

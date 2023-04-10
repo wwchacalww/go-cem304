@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"log"
 	"strconv"
 	"time"
 	"wwchacalww/go-cem304/domain/model"
@@ -17,114 +18,131 @@ func NewStudentDB(db *sql.DB) *StudentDB {
 	return &StudentDB{db: db}
 }
 
-func (std *StudentDB) Create(input repository.StudentInput) (model.StudentInterface, error) {
-	classIsSet := false
-	var class model.Classroom
-	if input.ClassroomID != "" {
-		classStmt, err := std.db.Prepare("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at from classrooms where id=$1")
+func (std *StudentDB) Save(input repository.StudentInput) (model.StudentInterface, error) {
+	student, err := std.FindByEducar(input.Educar)
+	if err != nil { // new student
+		student, err := model.NewStudent(input.Name, input.BirthDay, input.Educar)
+		student.Gender = input.Gender
+		student.ANNE = input.ANNE
+		student.Note = input.Note
+		student.EducaDF = input.EducaDF
+		student.Address = input.Address
+		student.City = input.City
+		student.CEP = input.CEP
+		student.Fones = input.Fones
+		student.CPF = input.CPF
+
 		if err != nil {
 			return nil, err
 		}
 
-		err = classStmt.QueryRow(input.ClassroomID).Scan(
-			&class.ID,
-			&class.Name,
-			&class.Level,
-			&class.Grade,
-			&class.Shift,
-			&class.Description,
-			&class.ANNE,
-			&class.Year,
-			&class.Status,
-			&class.CreatedAt,
-			&class.UpdatedAt,
-		)
+		var class model.Classroom
+		if input.ClassroomID != "" {
+			classStmt, err := std.db.Prepare("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at from classrooms where id=$1")
+			if err != nil {
+				return nil, err
+			}
+
+			err = classStmt.QueryRow(input.ClassroomID).Scan(
+				&class.ID,
+				&class.Name,
+				&class.Level,
+				&class.Grade,
+				&class.Shift,
+				&class.Description,
+				&class.ANNE,
+				&class.Year,
+				&class.Status,
+				&class.CreatedAt,
+				&class.UpdatedAt,
+			)
+			if err != nil {
+				return nil, err
+			}
+			classStmt.Close()
+			student.Classroom = &class
+		}
+
+		if input.Mother != "" {
+			mother := model.NewParent(input.Mother, "Mãe")
+			if input.Mother == input.Responsible {
+				mother.Responsible = true
+			}
+			student.Parents = append(student.Parents, mother)
+		}
+
+		if input.Father != "" {
+			father := model.NewParent(input.Father, "Pai")
+			if input.Father == input.Responsible {
+				father.Responsible = true
+			}
+			student.Parents = append(student.Parents, father)
+		}
+
+		_, err = student.IsValid()
 		if err != nil {
 			return nil, err
 		}
-		classIsSet = true
-		classStmt.Close()
-	}
-	student, err := model.NewStudent(input.Name, input.BirthDay, input.Educar)
-	student.Gender = input.Gender
-	student.ANNE = input.ANNE
-	student.Note = input.Note
-	student.EducaDF = input.EducaDF
-
-	if err != nil {
-		return nil, err
+		newStd, err := std.create(student)
+		if err != nil {
+			return nil, err
+		}
+		return newStd, nil
 	}
 
-	_, err = student.IsValid()
-	if err != nil {
-		return nil, err
+	NewStudent := model.Student{
+		ID:        student.GetID(),
+		Name:      student.GetName(),
+		BirthDay:  student.GetBirthDay(),
+		Gender:    input.Gender,
+		ANNE:      input.ANNE,
+		Note:      input.Note,
+		Educar:    input.Educar,
+		EducaDF:   input.EducaDF,
+		Classroom: student.GetClassroom(),
+		Status:    input.Status,
+		Address:   input.Address,
+		City:      input.City,
+		CEP:       input.CEP,
+		Fones:     input.Fones,
+		CPF:       input.CPF,
 	}
-	stmt, err := std.db.Prepare(`INSERT INTO Students (
-		id,
-		name,
-		birth_day,
-		gender,
-		anne,
-		note,
-		ieducar,
-		educa_df,
-		classroom_id,
-		status,
-		created_at,
-		updated_at
-	) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,$12)`)
+
+	if input.Mother != "" && student.GetParents() == nil {
+		mother := model.NewParent(input.Mother, "Mãe")
+		if input.Mother == input.Responsible {
+			mother.Responsible = true
+		}
+		NewStudent.Parents = append(NewStudent.Parents, mother)
+	}
+
+	if input.Father != "" && student.GetParents() == nil {
+		father := model.NewParent(input.Father, "Pai")
+		if input.Father == input.Responsible {
+			father.Responsible = true
+		}
+		NewStudent.Parents = append(NewStudent.Parents, father)
+	}
+	result, err := std.update(&NewStudent)
 	if err != nil {
 		return nil, err
 	}
 
-	if classIsSet {
-		student.Classroom = &class
-		_, err = stmt.Exec(
-			student.GetID(),
-			student.GetName(),
-			student.GetBirthDay(),
-			student.GetGender(),
-			student.GetANNE(),
-			student.GetNote(),
-			student.GetEducar(),
-			student.GetEducaDF(),
-			student.GetClassroom().GetID(),
-			student.GetStatus(),
-			student.GetCreatedAt(),
-			student.GetUpdatedAt(),
-		)
-	} else {
-		_, err = stmt.Exec(
-			student.GetID(),
-			student.GetName(),
-			student.GetBirthDay(),
-			student.GetGender(),
-			student.GetANNE(),
-			student.GetNote(),
-			student.GetEducar(),
-			student.GetEducaDF(),
-			"",
-			student.GetStatus(),
-			student.GetCreatedAt(),
-			student.GetUpdatedAt(),
-		)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-	err = stmt.Close()
-	if err != nil {
-		return nil, err
-	}
-	return student, nil
+	return result, nil
 }
 
 func (std *StudentDB) FindById(id string) (model.StudentInterface, error) {
 	var student model.Student
 	var classroom_id string
+	var ip struct {
+		Address sql.NullString
+		City    sql.NullString
+		CEP     sql.NullString
+		Fones   sql.NullString
+		CPF     sql.NullString
+	}
 
-	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, created_at, students.updated_at"
+	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, address, city, cep, fones, cpf, created_at, students.updated_at"
 	stmt, err := std.db.Prepare("SELECT " + std_fields + " from students WHERE id = $1")
 	if err != nil {
 		return nil, err
@@ -141,9 +159,21 @@ func (std *StudentDB) FindById(id string) (model.StudentInterface, error) {
 		&student.EducaDF,
 		&classroom_id,
 		&student.Status,
+		&ip.Address,
+		&ip.City,
+		&ip.CEP,
+		&ip.Fones,
+		&ip.CPF,
 		&student.CreatedAt,
 		&student.UpdatedAt,
 	)
+
+	student.Address = ip.Address.String
+	student.City = ip.City.String
+	student.CEP = ip.CEP.String
+	student.Fones = ip.Fones.String
+	student.CPF = ip.CPF.String
+
 	stmt.Close()
 
 	if classroom_id != "" {
@@ -178,14 +208,56 @@ func (std *StudentDB) FindById(id string) (model.StudentInterface, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	parentRows, err := std.db.Query(`SELECT p.id, p.name, cpf, email, fones, relationship, responsible 
+		FROM parents_students ps 
+		LEFT JOIN parents p ON p.id = ps.parent_id
+		WHERE ps.student_id = $1`, student.GetID())
+	if err != nil {
+		return nil, err
+	}
+	defer parentRows.Close()
+	var parents []model.ParentInterface
+	for parentRows.Next() {
+		var par model.Parent
+		var cpf, email, fones, relationship sql.NullString
+		err = parentRows.Scan(
+			&par.ID,
+			&par.Name,
+			&cpf,
+			&email,
+			&fones,
+			&relationship,
+			&par.Responsible,
+		)
+		if err != nil {
+			return nil, err
+		}
+		par.CPF = cpf.String
+		par.Email = email.String
+		par.Fones = fones.String
+		par.Relationship = relationship.String
+		parents = append(parents, &par)
+	}
+	if len(parents) > 0 {
+		student.Parents = parents
+	}
+
 	return &student, nil
 }
 
 func (std *StudentDB) FindByEducar(educar int64) (model.StudentInterface, error) {
 	var student model.Student
 	var classroom_id string
+	var ip struct {
+		Address sql.NullString
+		City    sql.NullString
+		CEP     sql.NullString
+		Fones   sql.NullString
+		CPF     sql.NullString
+	}
 
-	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, created_at, students.updated_at"
+	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, address, city, cep, fones, cpf, created_at, students.updated_at"
 	stmt, err := std.db.Prepare("SELECT " + std_fields + " from students WHERE ieducar = $1")
 	if err != nil {
 		return nil, err
@@ -202,9 +274,21 @@ func (std *StudentDB) FindByEducar(educar int64) (model.StudentInterface, error)
 		&student.EducaDF,
 		&classroom_id,
 		&student.Status,
+		&ip.Address,
+		&ip.City,
+		&ip.CEP,
+		&ip.Fones,
+		&ip.CPF,
 		&student.CreatedAt,
 		&student.UpdatedAt,
 	)
+
+	student.Address = ip.Address.String
+	student.City = ip.City.String
+	student.CEP = ip.CEP.String
+	student.Fones = ip.Fones.String
+	student.CPF = ip.CPF.String
+
 	stmt.Close()
 
 	if classroom_id != "" {
@@ -239,6 +323,41 @@ func (std *StudentDB) FindByEducar(educar int64) (model.StudentInterface, error)
 	if err != nil {
 		return nil, err
 	}
+
+	parentRows, err := std.db.Query(`SELECT p.id, p.name, cpf, email, fones, relationship, responsible 
+		FROM parents_students ps 
+		LEFT JOIN parents p ON p.id = ps.parent_id
+		WHERE ps.student_id = $1`, student.GetID())
+	if err != nil {
+		return nil, err
+	}
+	defer parentRows.Close()
+	var parents []model.ParentInterface
+	for parentRows.Next() {
+		var par model.Parent
+		var cpf, email, fones, relationship sql.NullString
+		err = parentRows.Scan(
+			&par.ID,
+			&par.Name,
+			&cpf,
+			&email,
+			&fones,
+			&relationship,
+			&par.Responsible,
+		)
+		if err != nil {
+			return nil, err
+		}
+		par.CPF = cpf.String
+		par.Email = email.String
+		par.Fones = fones.String
+		par.Relationship = relationship.String
+		parents = append(parents, &par)
+	}
+	if len(parents) > 0 {
+		student.Parents = parents
+	}
+
 	return &student, nil
 }
 
@@ -274,7 +393,14 @@ func (std *StudentDB) FindByName(name string) ([]model.StudentInterface, error) 
 	}
 
 	var students []model.StudentInterface
-	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, created_at, students.updated_at"
+	var ip struct {
+		Address sql.NullString
+		City    sql.NullString
+		CEP     sql.NullString
+		Fones   sql.NullString
+		CPF     sql.NullString
+	}
+	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, classroom_id, status, address, city, cep, fones, cpf, created_at, students.updated_at"
 	rows, err := std.db.Query("SELECT "+std_fields+" from students where name like $1 ORDER BY name ASC", "%"+name+"%")
 	if err != nil {
 		return nil, err
@@ -294,13 +420,22 @@ func (std *StudentDB) FindByName(name string) ([]model.StudentInterface, error) 
 			&student.EducaDF,
 			&classroom_id,
 			&student.Status,
+			&ip.Address,
+			&ip.City,
+			&ip.CEP,
+			&ip.Fones,
+			&ip.CPF,
 			&student.CreatedAt,
 			&student.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
-
+		student.Address = ip.Address.String
+		student.City = ip.City.String
+		student.CEP = ip.CEP.String
+		student.Fones = ip.Fones.String
+		student.CPF = ip.CPF.String
 		if classroom_id != "" {
 			xpto, err := utils.FindClassById(classrooms, classroom_id)
 			if err != nil {
@@ -412,7 +547,14 @@ func (std *StudentDB) List(classroom_id string) ([]model.StudentInterface, error
 	classStmt.Close()
 
 	var students []model.StudentInterface
-	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, status, created_at, students.updated_at"
+	var ip struct {
+		Address sql.NullString
+		City    sql.NullString
+		CEP     sql.NullString
+		Fones   sql.NullString
+		CPF     sql.NullString
+	}
+	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, status, address, city, cep, fones, cpf, created_at, students.updated_at"
 	rows, err := std.db.Query("SELECT "+std_fields+" from students where classroom_id = $1 ORDER BY name ASC", classroom_id)
 	if err != nil {
 		return nil, err
@@ -429,6 +571,11 @@ func (std *StudentDB) List(classroom_id string) ([]model.StudentInterface, error
 			&student.Educar,
 			&student.EducaDF,
 			&student.Status,
+			&ip.Address,
+			&ip.City,
+			&ip.CEP,
+			&ip.Fones,
+			&ip.CPF,
 			&student.CreatedAt,
 			&student.UpdatedAt,
 		)
@@ -436,6 +583,12 @@ func (std *StudentDB) List(classroom_id string) ([]model.StudentInterface, error
 			return nil, err
 		}
 		student.Classroom = &class
+		student.Address = ip.Address.String
+		student.City = ip.City.String
+		student.CEP = ip.CEP.String
+		student.Fones = ip.Fones.String
+		student.CPF = ip.CPF.String
+
 		students = append(students, &student)
 	}
 
@@ -636,11 +789,169 @@ func (std *StudentDB) AddMass(mass []repository.StudentInput) ([]model.StudentIn
 	return students, nil
 }
 
-func (c *StudentDB) ChangeClassroom(id, classroom_id string) error {
-	_, err := c.db.Exec("UPDATE students SET classroom_id=$1 WHERE id=$2", classroom_id, id)
+func (std *StudentDB) ChangeClassroom(id, classroom_id string) error {
+	_, err := std.db.Exec("UPDATE students SET classroom_id=$1 WHERE id=$2", classroom_id, id)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (std *StudentDB) create(student model.StudentInterface) (model.StudentInterface, error) {
+	classIsSet := false
+	if student.GetClassroom() != nil {
+		classIsSet = true
+	}
+
+	stmt, err := std.db.Prepare(`INSERT INTO Students (
+		id,
+		name,
+		birth_day,
+		gender,
+		anne,
+		note,
+		ieducar,
+		educa_df,
+		classroom_id,
+		status,
+		address, city, cep, fones, cpf,
+		created_at,
+		updated_at
+	) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,$12, $13, $14, $15, $16, $17)`)
+	if err != nil {
+		return nil, err
+	}
+	if classIsSet {
+		_, err = stmt.Exec(
+			student.GetID(),
+			student.GetName(),
+			student.GetBirthDay(),
+			student.GetGender(),
+			student.GetANNE(),
+			student.GetNote(),
+			student.GetEducar(),
+			student.GetEducaDF(),
+			student.GetClassroom().GetID(),
+			student.GetStatus(),
+			student.GetAddress(),
+			student.GetCity(),
+			student.GetCEP(),
+			student.GetFones(),
+			student.GetCPF(),
+			student.GetCreatedAt(),
+			student.GetUpdatedAt(),
+		)
+	} else {
+		_, err = stmt.Exec(
+			student.GetID(),
+			student.GetName(),
+			student.GetBirthDay(),
+			student.GetGender(),
+			student.GetANNE(),
+			student.GetNote(),
+			student.GetEducar(),
+			student.GetEducaDF(),
+			"",
+			student.GetStatus(),
+			student.GetAddress(),
+			student.GetCity(),
+			student.GetCEP(),
+			student.GetFones(),
+			student.GetCPF(),
+			student.GetCreatedAt(),
+			student.GetUpdatedAt(),
+		)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	err = stmt.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	if student.GetParents() != nil {
+		for i, p := range student.GetParents() {
+			log.Println(p, i)
+			_, err = std.db.Exec("INSERT INTO parents (id,name) values ( $1, $2)", p.GetID(), p.GetName())
+			if err != nil {
+				return nil, err
+			}
+			_, err = std.db.Exec(`INSERT INTO parents_students (
+				parent_id,
+				student_id,
+				relationship,
+				responsible
+				) values ( 
+					$1, $2, $3, $4
+				)`, p.GetID(), student.GetID(), p.GetRelationship(), p.GetResponsible())
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return student, nil
+}
+
+func (std *StudentDB) update(student model.StudentInterface) (model.StudentInterface, error) {
+	_, err := std.db.Exec(`UPDATE students SET 
+		birth_day=$1, 
+		gender=$2, 
+		anne=$3, 
+		note=$4, 
+		ieducar=$5, 
+		educa_df=$6, 
+		classroom_id=$7, 
+		status=$8, 
+		address=$9, 
+		city=$10, 
+		cep=$11, 
+		fones=$12, 
+		cpf=$13, 
+		updated_at=$14
+		WHERE id=$15`,
+		student.GetBirthDay(),
+		student.GetGender(),
+		student.GetANNE(),
+		student.GetNote(),
+		student.GetEducar(),
+		student.GetEducaDF(),
+		student.GetClassroom().GetID(),
+		student.GetStatus(),
+		student.GetAddress(),
+		student.GetCity(),
+		student.GetCEP(),
+		student.GetFones(),
+		student.GetCPF(),
+		time.Now(),
+		student.GetID(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if student.GetParents() != nil {
+		for i, p := range student.GetParents() {
+			log.Println(p, i)
+			_, err = std.db.Exec("INSERT INTO parents (id,name) values ( $1, $2)", p.GetID(), p.GetName())
+			if err != nil {
+				return nil, err
+			}
+			_, err = std.db.Exec(`INSERT INTO parents_students (
+				parent_id,
+				student_id,
+				relationship,
+				responsible
+				) values ( 
+					$1, $2, $3, $4
+				)`, p.GetID(), student.GetID(), p.GetRelationship(), p.GetResponsible())
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return student, nil
 }
