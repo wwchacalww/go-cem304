@@ -3,3 +3,4 @@
 .pg-data
 tmp
 public/imgs
+postgres/backup.sql

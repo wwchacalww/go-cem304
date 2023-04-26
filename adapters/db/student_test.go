@@ -33,6 +33,11 @@ func createStudentTable(db *sql.DB) {
 		"educa_df" string,
 		"classroom_id" string,
 		"status" boolean,
+		"address" string,
+		"city" string,
+		"cep" string,
+		"fones" string,
+		"cpf" string,
 		"created_at" Date,
 		"updated_at" Date
 	);
@@ -60,8 +65,8 @@ func createStudentTable(db *sql.DB) {
 
 func createstudent(db *sql.DB) {
 	insert := `insert into students values
-	("id-1", "Fulana de Tal Lima", $1, "Feminino", "", "Notações", 1101, "cod-educa-df-2023", "class-1", 1, $2, $3),
-	("id-2", "Beltrano da Silva Lima", $1, "Masculino", "", "Notações", 1102, "cod-educa-df-2023", "class-2", 1, $2, $3);`
+	("id-1", "Fulana de Tal Lima", $1, "Feminino", "", "Notações", 1101, "cod-educa-df-2023", "class-1", 1, "Rua dos Bobos", "BSB", "70000-000", "(61)555-5555", "123.123.123.23", $2, $3),
+	("id-2", "Beltrano da Silva Lima", $1, "Masculino", "", "Notações", 1102, "cod-educa-df-2023", "class-2", 1, "Rua dos Bobos", "JAMPA", "72000-000", "(61)666-5555", "999.123.123.23", $2, $3);`
 	stmt, err := db.Prepare(insert)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -85,6 +90,16 @@ func TestStudent_Get(t *testing.T) {
 	defer dB_student_test.Close()
 	studentDB := db.NewStudentDB(dB_student_test)
 	student, err := studentDB.FindById("id-1")
+	require.Nil(t, err)
+	require.Equal(t, "Fulana de Tal Lima", student.GetName())
+	require.Equal(t, "1º ano A - Vespertino", student.GetClassroom().GetName())
+}
+
+func TestStudent_FindEducar(t *testing.T) {
+	setUpStudentTest()
+	defer dB_student_test.Close()
+	studentDB := db.NewStudentDB(dB_student_test)
+	student, err := studentDB.FindByEducar(1101)
 	require.Nil(t, err)
 	require.Equal(t, "Fulana de Tal Lima", student.GetName())
 	require.Equal(t, "1º ano A - Vespertino", student.GetClassroom().GetName())
@@ -124,11 +139,15 @@ func TestStudent_Create(t *testing.T) {
 		Note:        "",
 		EducaDF:     "",
 		ClassroomID: "class-1",
+		Address:     "QR 555 conjunto 55 casa 55 - Samambaia Sul",
+		City:        "Samambaia-DF",
+		CEP:         "77.777-77",
+		Fones:       "(61)7777-7777, (61)555-5555",
+		CPF:         "999.222.444-11",
 	}
 
 	student, err := studentDB.Create(input)
 	require.Nil(t, err)
-	// log.Println(student)
 
 	studentFind, err := studentDB.FindById(student.GetID())
 	require.Nil(t, err)

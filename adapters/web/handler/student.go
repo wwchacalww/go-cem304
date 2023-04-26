@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"wwchacalww/go-cem304/domain/repository"
 	"wwchacalww/go-cem304/domain/utils"
 	"wwchacalww/go-cem304/usecase/check"
@@ -27,6 +28,7 @@ func MakeStudentHandlers(r *chi.Mux, repo repository.StudentRepositoryInterface)
 	r.Route("/students", func(r chi.Router) {
 		r.Post("/", handler.Store)
 		r.Post("/import", handler.Import)
+		r.Post("/import/report", handler.ImportReport)
 		r.Get("/{id}", handler.GetStudent)
 		r.Get("/educar/{id}", handler.FindByEducar)
 		r.Get("/search", handler.FindByName)
@@ -48,8 +50,7 @@ func (s *StudentHandler) Store(w http.ResponseWriter, r *http.Request) {
 		w.Write(jsonError(err.Error()))
 		return
 	}
-
-	class, err := s.Repo.Create(input)
+	class, err := s.Repo.Save(input)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))
@@ -127,7 +128,7 @@ func (s *StudentHandler) FindByEducar(w http.ResponseWriter, r *http.Request) {
 
 func (s *StudentHandler) FindByName(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
-	Students, err := s.Repo.FindByName(name)
+	Students, err := s.Repo.FindByName(strings.ToUpper(name))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))
@@ -250,6 +251,57 @@ func (s *StudentHandler) Import(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (s *StudentHandler) ImportReport(w http.ResponseWriter, r *http.Request) {
+	f, fh, err := r.FormFile("file")
+	classroom_id := r.FormValue("classroom_id")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	ct := fh.Header.Get("Content-Type")
+	if ct != "text/plain" {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError("File type invalid"))
+		return
+	}
+	defer f.Close()
+	result, err := utils.ReportToStudents(f, classroom_id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	students, err := s.Repo.AddMassReport(result)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	// list, err := utils.CsvToClassrooms(f)
+	// if err != nil {
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// 	w.Write(jsonError(err.Error()))
+	// 	return
+	// }
+
+	// result, err := c.Repo.AddMass(list)
+	// if err != nil {
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// 	w.Write(jsonError(err.Error()))
+	// 	return
+	// }
+
+	err = json.NewEncoder(w).Encode(students)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *StudentHandler) CheckStudentsInClass(w http.ResponseWriter, r *http.Request) {

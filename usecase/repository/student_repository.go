@@ -13,8 +13,8 @@ func NewStudentRepository(persistence repository.StudentPersistence) *StudentRep
 	return &StudentRepository{Persistence: persistence}
 }
 
-func (repo *StudentRepository) Create(input repository.StudentInput) (model.StudentInterface, error) {
-	study, err := repo.Persistence.Create(input)
+func (repo *StudentRepository) Save(input repository.StudentInput) (model.StudentInterface, error) {
+	study, err := repo.Persistence.Save(input)
 	if err != nil {
 		return nil, err
 	}
@@ -103,6 +103,17 @@ func (repo *StudentRepository) AddMass(mass []repository.StudentInput) ([]model.
 	return result, nil
 }
 
+func (repo *StudentRepository) AddMassReport(mass []repository.StudentInput) ([]model.StudentInterface, error) {
+	var students []model.StudentInterface
+	for _, input := range mass {
+		std, err := repo.Persistence.Save(input)
+		if err != nil {
+			return nil, err
+		}
+		students = append(students, std)
+	}
+	return students, nil
+}
 func (repo *StudentRepository) ChangeClassroom(id, classroom_id string) error {
 	err := repo.Persistence.ChangeClassroom(id, classroom_id)
 	if err != nil {

@@ -21,7 +21,7 @@ type Parent struct {
 	ID           string             `json:"id" valid:"uuidv4"`
 	Name         string             `json:"name" valid:"required,stringlength(5|20)"`
 	Relationship string             `json:"relationship" valid:"alphanum,required"`
-	CPF          string             `json:"cpf" valid:"optional"`
+	CPF          string             `valid:"optional"`
 	Email        string             `json:"email" valid:"optional,email"`
 	Fones        string             `json:"fones" valid:"optional"`
 	Responsible  bool               `json:"responsible" valid:"optional"`
