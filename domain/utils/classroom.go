@@ -9,6 +9,8 @@ import (
 	"strings"
 	"wwchacalww/go-cem304/domain/model"
 	"wwchacalww/go-cem304/domain/repository"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 type CheckResult struct {
@@ -134,7 +136,10 @@ func ReportToStudents(f multipart.File, classroom_id string) ([]repository.Stude
 		case i%10 == 8:
 			input.Fones = l[0]
 		case i%10 == 9:
-			input.CPF = l[0]
+			input.CPF = uuid.NewV4().String()
+			if l[0] != "NULL" {
+				input.CPF = l[0]
+			}
 			result = append(result, input)
 		}
 	}

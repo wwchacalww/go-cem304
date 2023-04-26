@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"wwchacalww/go-cem304/domain/repository"
 	"wwchacalww/go-cem304/domain/utils"
 	"wwchacalww/go-cem304/usecase/check"
@@ -127,7 +128,7 @@ func (s *StudentHandler) FindByEducar(w http.ResponseWriter, r *http.Request) {
 
 func (s *StudentHandler) FindByName(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
-	Students, err := s.Repo.FindByName(name)
+	Students, err := s.Repo.FindByName(strings.ToUpper(name))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))

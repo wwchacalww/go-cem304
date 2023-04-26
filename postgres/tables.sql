@@ -72,4 +72,4 @@ CREATE TABLE IF NOT EXISTS parents_students (
 	relationship VARCHAR NOT NULL,
 	responsible bool NOT NULL DEFAULT false,
 	CONSTRAINT parents_students_pk PRIMARY KEY (parent_id, student_id) -- explicit pk
-)
+);
