@@ -37,6 +37,7 @@ type StudentRepositoryInterface interface {
 	AddMass(mass []StudentInput) ([]model.StudentInterface, error)
 	AddMassReport(mass []StudentInput) ([]model.StudentInterface, error)
 	ChangeClassroom(id, classroom_id string) error
+	ChangeEducaDF(id, educa_df string) error
 }
 
 type StudentPersistence interface {
@@ -51,4 +52,5 @@ type StudentPersistence interface {
 	ANNE(id, anne string) (model.StudentInterface, error)
 	AddMass(mass []StudentInput) ([]model.StudentInterface, error)
 	ChangeClassroom(id, classroom_id string) error
+	ChangeEducaDF(id, educa_df string) error
 }

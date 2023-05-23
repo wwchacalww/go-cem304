@@ -114,8 +114,18 @@ func (repo *StudentRepository) AddMassReport(mass []repository.StudentInput) ([]
 	}
 	return students, nil
 }
+
 func (repo *StudentRepository) ChangeClassroom(id, classroom_id string) error {
 	err := repo.Persistence.ChangeClassroom(id, classroom_id)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (repo *StudentRepository) ChangeEducaDF(id, educa_df string) error {
+	err := repo.Persistence.ChangeEducaDF(id, educa_df)
 	if err != nil {
 		return err
 	}

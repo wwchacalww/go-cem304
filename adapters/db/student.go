@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 	"wwchacalww/go-cem304/domain/model"
 	"wwchacalww/go-cem304/domain/repository"
@@ -798,6 +799,15 @@ func (std *StudentDB) ChangeClassroom(id, classroom_id string) error {
 	return nil
 }
 
+func (std *StudentDB) ChangeEducaDF(id, educa_df string) error {
+	_, err := std.db.Exec("UPDATE students SET educa_df=$1 WHERE id=$2", educa_df, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (std *StudentDB) create(student model.StudentInterface) (model.StudentInterface, error) {
 	classIsSet := false
 	if student.GetClassroom() != nil {
@@ -954,4 +964,30 @@ func (std *StudentDB) update(student model.StudentInterface) (model.StudentInter
 	}
 
 	return student, nil
+}
+
+func (std *StudentDB) trim() error {
+
+	rows, err := std.db.Query("SELECT id, name from students ORDER BY name ASC")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id string
+		var name string
+		err = rows.Scan(&id, &name)
+		if err != nil {
+			return err
+		}
+		name = strings.ToUpper(name)
+		name = strings.TrimPrefix(name, " ")
+		name = strings.TrimSuffix(name, " ")
+		_, err := std.db.Exec("update students set name=$1 where id=$2", name, id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
