@@ -96,7 +96,8 @@ Repository for studying and practicing GOLANG applied in a school management sys
  - [X] Diary Class in pdf
 
 ## Utils tools
- - [ ] Read and save data of reports
-   - [ ] Create a function read reports students
-   - [ ] Create a function on repository to save data
-   - [ ] Create handler for import reports
+ - [X] Read and save data of reports
+   - [X] Create a function read reports students
+   - [X] Create a function on repository to save data
+   - [X] Create handler for import reports
+   - [X] Update in mass students list

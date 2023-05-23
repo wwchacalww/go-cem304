@@ -36,6 +36,8 @@ func MakeStudentHandlers(r *chi.Mux, repo repository.StudentRepositoryInterface)
 		r.Put("/change", handler.ChangeClassroom)
 		r.Put("/checkclass", handler.CheckStudentsInClass)
 		r.Post("/statement/schooling", handler.StatementSchooling)
+		r.Put("/check/list", handler.CheckStudentsList)
+		r.Put("/update/list/educadf", handler.UpdateEducaDFList)
 		// r.Patch("/enable/{id}", handler.Enable)
 		// r.Patch("/disable/{id}", handler.Disable)
 		// r.Patch("/anne", handler.ANNE)
@@ -414,4 +416,81 @@ func (s *StudentHandler) StatementSchooling(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (s *StudentHandler) CheckStudentsList(w http.ResponseWriter, r *http.Request) {
+	f, fh, err := r.FormFile("file")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	ct := fh.Header.Get("Content-Type")
+	if ct != "text/plain" {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError("File type invalid"))
+		return
+	}
+	defer f.Close()
+	result, err := utils.CheckStudentsList(f)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	err = json.NewEncoder(w).Encode(result)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *StudentHandler) UpdateEducaDFList(w http.ResponseWriter, r *http.Request) {
+	f, fh, err := r.FormFile("file")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	ct := fh.Header.Get("Content-Type")
+	if ct != "text/csv" {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError("File type invalid"))
+		return
+	}
+	defer f.Close()
+	classroom_id := r.FormValue("classroom_id")
+	classroom, err := s.Repo.List(classroom_id)
+	result, err := utils.CheckEducaDFList(f)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	for _, std := range result {
+		student, err := utils.FindByName(std.Name, classroom)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(jsonError(err.Error()))
+			return
+		}
+		log.Println(student.GetEducar(), std.Name, std.EducaDF)
+		err = s.Repo.ChangeEducaDF(student.GetID(), std.EducaDF)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(jsonError(err.Error()))
+			return
+		}
+	}
+
+	err = json.NewEncoder(w).Encode(classroom)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
