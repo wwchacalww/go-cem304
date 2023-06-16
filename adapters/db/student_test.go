@@ -146,7 +146,7 @@ func TestStudent_Create(t *testing.T) {
 		CPF:         "999.222.444-11",
 	}
 
-	student, err := studentDB.Create(input)
+	student, err := studentDB.Save(input)
 	require.Nil(t, err)
 
 	studentFind, err := studentDB.FindById(student.GetID())

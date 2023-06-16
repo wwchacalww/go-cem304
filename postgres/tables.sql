@@ -73,3 +73,20 @@ CREATE TABLE IF NOT EXISTS parents_students (
 	responsible bool NOT NULL DEFAULT false,
 	CONSTRAINT parents_students_pk PRIMARY KEY (parent_id, student_id) -- explicit pk
 );
+
+CREATE TABLE IF NOT EXISTS teachers (
+	id uuid DEFAULT uuid_generate_v4 (),
+	name VARCHAR NOT NULL,
+	nick VARCHAR NOT NULL,
+	birth_day TIMESTAMP NULL,
+	gender VARCHAR NULL,
+	cpf VARCHAR UNIQUE NULL,
+	fones VARCHAR NULL,
+	email VARCHAR NULL,
+	license VARCHAR NOT NULL,
+	note VARCHAR NULL,
+	status bool NOT NULL DEFAULT true,
+	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	PRIMARY KEY (id)
+);

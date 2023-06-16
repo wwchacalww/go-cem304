@@ -255,7 +255,7 @@ func DiaryAllClass(classrooms []model.ClassroomInterface) error {
 			pdf.CellFormat(260, 8, txt, "0", 1, "C", false, 0, "")
 
 			pdf.CellFormat(20, 8, "", "0", 0, "C", false, 0, "")
-			pdf.CellFormat(60, 8, "MAIO DE 2023", "0", 0, "C", false, 0, "")
+			pdf.CellFormat(60, 8, "JUNHO DE 2023", "0", 0, "C", false, 0, "")
 			pdf.CellFormat(35, 8, "DISCIPLINA:", "0", 0, "R", false, 0, "")
 			txt = "____________________________"
 			pdf.CellFormat(55, 8, txt, "B", 0, "L", false, 0, "")
@@ -267,19 +267,19 @@ func DiaryAllClass(classrooms []model.ClassroomInterface) error {
 			pdf.SetDrawColor(200, 200, 200)
 			pdf.SetFillColor(100, 100, 100)
 			pdf.CellFormat(20, 6, "N.º", "1", 0, "C", true, 0, "")
-			days := [24]string{
-				"02", "03", "04", "05", "06",
-				"08", "09", "10", "11", "12",
-				"15", "16", "17", "18", "19", "20",
-				"22", "23", "24", "25", "26",
-				"29", "30", "31",
+			days := [23]string{
+				"01", "02", "03",
+				"05", "06", "07", "08", "09",
+				"12", "13", "14", "15", "16",
+				"19", "20", "21", "22", "23",
+				"26", "27", "28", "29", "30",
 			}
 
-			pdf.CellFormat(90, 6, "    Nome do Aluno", "1", 0, "L", true, 0, "")
+			pdf.CellFormat(86, 6, "    Nome do Aluno", "1", 0, "L", true, 0, "")
 			for _, d := range days {
 				pdf.CellFormat(6, 6, d, "1", 0, "C", true, 0, "")
 			}
-			pdf.CellFormat(26, 6, "Anotações", "1", 1, "C", true, 0, "")
+			pdf.CellFormat(36, 6, "Anotações", "1", 1, "C", true, 0, "")
 			pdf.SetTextColor(0, 0, 0)
 
 			pdf.SetFillColor(225, 225, 225)
@@ -298,7 +298,7 @@ func DiaryAllClass(classrooms []model.ClassroomInterface) error {
 					pdf.CellFormat(260, 8, txt, "0", 1, "C", false, 0, "")
 
 					pdf.CellFormat(20, 8, "", "0", 0, "C", false, 0, "")
-					pdf.CellFormat(60, 8, "MAIO DE 2023", "0", 0, "C", false, 0, "")
+					pdf.CellFormat(60, 8, "JUNHO DE 2023", "0", 0, "C", false, 0, "")
 					pdf.CellFormat(35, 8, "DISCIPLINA:", "0", 0, "R", false, 0, "")
 					txt = "____________________________"
 					pdf.CellFormat(55, 8, txt, "B", 0, "L", false, 0, "")
@@ -311,11 +311,11 @@ func DiaryAllClass(classrooms []model.ClassroomInterface) error {
 					pdf.SetFillColor(100, 100, 100)
 					pdf.CellFormat(20, 6, "N.º", "1", 0, "C", true, 0, "")
 
-					pdf.CellFormat(90, 6, "    Nome do Aluno", "1", 0, "L", true, 0, "")
+					pdf.CellFormat(86, 6, "    Nome do Aluno", "1", 0, "L", true, 0, "")
 					for _, d := range days {
 						pdf.CellFormat(6, 6, d, "1", 0, "C", true, 0, "")
 					}
-					pdf.CellFormat(26, 6, "Anotações", "1", 1, "C", true, 0, "")
+					pdf.CellFormat(36, 6, "Anotações", "1", 1, "C", true, 0, "")
 					pdf.SetTextColor(0, 0, 0)
 
 					pdf.SetFillColor(225, 225, 225)
@@ -331,14 +331,14 @@ func DiaryAllClass(classrooms []model.ClassroomInterface) error {
 					n = "0" + strconv.Itoa(i+1)
 				}
 				pdf.CellFormat(20, 4.6, n, "1", 0, "C", fill, 0, "")
-				pdf.CellFormat(90, 4.6, "  "+student.GetName(), "1", 0, "L", fill, 0, "")
+				pdf.CellFormat(86, 4.6, "  "+student.GetName(), "1", 0, "L", fill, 0, "")
 				for _, d := range days {
 					if d == "asflkj" {
 						d = ""
 					}
 					pdf.CellFormat(6, 4.6, "", "1", 0, "C", fill, 0, "")
 				}
-				pdf.CellFormat(26, 4.6, "", "1", 1, "C", fill, 0, "")
+				pdf.CellFormat(36, 4.6, "", "1", 1, "C", fill, 0, "")
 			}
 			ts = strconv.Itoa(len(class.GetStudents()))
 			pdf.CellFormat(130, 8, "Total de "+ts+" alunos", "0", 0, "L", false, 0, "")

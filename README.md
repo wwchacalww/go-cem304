@@ -53,6 +53,12 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [X] Import file csv and registry Classrooms
    - [X] Change Classroom
    - [X] Check Students on Classrooms in mass
+ - [ ] Create Teacher handler server
+   - [X] Register Teacher
+   - [X] Get by id teacher
+   - [X] Get by name teacher
+   - [X] Get by cpf teacher
+   - [ ] Update Teacher
 
 ## Domains - Users
  - [X] Create entity
@@ -87,8 +93,15 @@ Repository for studying and practicing GOLANG applied in a school management sys
  - [X] Create entity
  - [X] Test entity classroom
  - [X] Create repository Parent
+ - [X] Create persistence db and test
+ - [X] Create table on postgresql
+
+## Domains - Teacher
+ - [X] Create entity
+ - [X] Test entity classroom
+ - [X] Create repository Teacher
  - [ ] Create persistence db and test
- - [ ] Create table on postgresql
+ - [X] Create table on postgresql
 
 ## PDF report generator
  - [X] Create a function for generator PDF

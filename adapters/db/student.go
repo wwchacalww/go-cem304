@@ -409,7 +409,7 @@ func (std *StudentDB) FindByName(name string) ([]model.StudentInterface, error) 
 	defer rows.Close()
 	for rows.Next() {
 		var student model.Student
-		var classroom_id string
+		var classroom_id sql.NullString
 		err = rows.Scan(
 			&student.ID,
 			&student.Name,
@@ -437,8 +437,8 @@ func (std *StudentDB) FindByName(name string) ([]model.StudentInterface, error) 
 		student.CEP = ip.CEP.String
 		student.Fones = ip.Fones.String
 		student.CPF = ip.CPF.String
-		if classroom_id != "" {
-			xpto, err := utils.FindClassById(classrooms, classroom_id)
+		if classroom_id.String != "" {
+			xpto, err := utils.FindClassById(classrooms, classroom_id.String)
 			if err != nil {
 				return nil, err
 			}
