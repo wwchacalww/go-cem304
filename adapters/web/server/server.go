@@ -17,6 +17,7 @@ type WebServer struct {
 	StudentRepository   repository.StudentRepositoryInterface
 	ParentRepository    repository.ParentRepositoryInterface
 	TeacherRepository   repository.TeacherRepositoryInterface
+	SubjectRepository   repository.SubjectRepositoryInterface
 }
 
 func MakeNewWebServer() *WebServer {
@@ -43,6 +44,7 @@ func (w WebServer) Server() {
 	handler.MakeStudentHandlers(r, w.StudentRepository)
 	handler.MakeParentHandler(r, w.ParentRepository)
 	handler.MakeTeacherHandlers(r, w.TeacherRepository)
+	handler.MakeSubjectHandlers(r, w.SubjectRepository)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World!"))

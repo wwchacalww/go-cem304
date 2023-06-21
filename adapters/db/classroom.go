@@ -81,7 +81,7 @@ func (c *ClassroomDB) FindById(id string) (model.ClassroomInterface, error) {
 	}
 
 	var students []model.StudentInterface
-	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, status, created_at, students.updated_at"
+	std_fields := "id, name, birth_day, gender, anne, note, ieducar, educa_df, status, cpf, created_at, students.updated_at"
 	rows, err := c.db.Query("SELECT "+std_fields+" FROM students WHERE classroom_id = $1 ORDER BY name", id)
 	if err != nil {
 		return nil, err
@@ -89,6 +89,7 @@ func (c *ClassroomDB) FindById(id string) (model.ClassroomInterface, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var student model.Student
+		var cpf sql.NullString
 		err = rows.Scan(
 			&student.ID,
 			&student.Name,
@@ -99,9 +100,11 @@ func (c *ClassroomDB) FindById(id string) (model.ClassroomInterface, error) {
 			&student.Educar,
 			&student.EducaDF,
 			&student.Status,
+			&cpf,
 			&student.CreatedAt,
 			&student.UpdatedAt,
 		)
+		student.CPF = cpf.String
 		if err != nil {
 			return nil, err
 		}

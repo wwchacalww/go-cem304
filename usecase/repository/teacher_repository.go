@@ -41,12 +41,12 @@ func (repo *TeacherRepository) FindByCPF(cpf string) (model.TeacherInterface, er
 }
 
 func (repo *TeacherRepository) FindByName(name string) ([]model.TeacherInterface, error) {
-	paretens, err := repo.Persistence.FindByName(name)
+	teachers, err := repo.Persistence.FindByName(name)
 	if err != nil {
 		return nil, err
 	}
 
-	return paretens, nil
+	return teachers, nil
 }
 
 func (repo *TeacherRepository) Save(id string, input repository.TeacherInput) (model.TeacherInterface, error) {

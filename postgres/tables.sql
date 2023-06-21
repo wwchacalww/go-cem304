@@ -90,3 +90,18 @@ CREATE TABLE IF NOT EXISTS teachers (
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS subjects (
+	id uuid DEFAULT uuid_generate_v4 (),
+	name VARCHAR NOT NULL,
+	license VARCHAR NOT NULL,
+	level VARCHAR NOT NULL,
+	grade VARCHAR NOT NULL,
+	note VARCHAR NULL,
+	ch INTEGER NULL,
+	year INTEGER NOT NULL,
+	semester VARCHAR NULL,
+	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	PRIMARY KEY (id)
+);
