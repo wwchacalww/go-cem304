@@ -19,6 +19,7 @@ func MakeTeacherHandlers(r *chi.Mux, repo repository.TeacherRepositoryInterface)
 
 	r.Route("/teachers", func(r chi.Router) {
 		r.Post("/", handler.Store)
+		r.Post("/attach/class/subject", handler.AttachClassSubject)
 		r.Get("/{id}", handler.GetTeacher)
 		r.Get("/search", handler.FindByName)
 	})
@@ -47,6 +48,40 @@ func (t *TeacherHandler) Store(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (t *TeacherHandler) AttachClassSubject(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Id           string `json:"teacher_id"`
+		Classroom_Id string `json:"classroom_id"`
+		Subject_Id   string `json:"subject_id"`
+		Slug         string `json:"slug"`
+		Wch          int32  `json:"wch"`
+		StartCourse  string `json:"start_course"`
+		EndCourse    string `json:"end_course"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	teacher, err := t.Repo.AttachClassroomSubject(input.Id, input.Classroom_Id, input.Subject_Id, input.Slug, input.StartCourse, input.EndCourse, input.Wch)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(teacher)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (t *TeacherHandler) GetTeacher(w http.ResponseWriter, r *http.Request) {

@@ -18,22 +18,27 @@ type SubjectInterface interface {
 	GetCH() int
 	GetYear() int
 	GetSemester() string
+	GetClassrooms() []ClassroomInterface
+	GetTeacher() TeacherInterface
 	GetCreatedAt() time.Time
 	GetUpdatedAt() time.Time
+	AttachClassroom(classroom Classroom) error
 }
 
 type Subject struct {
-	ID        string    `valid:"uuidv4" json:"id"`
-	Name      string    `valid:"required,stringlength(5|150)" json:"name"`
-	License   string    `valid:"required,stringlength(5|50)" json:"license"`
-	Level     string    `valid:"required,stringlength(5|50)" json:"level"`
-	Grade     string    `valid:"required,stringlength(5|50)" json:"grade"`
-	Note      string    `valid:"optional" json:"note"`
-	CH        int       `valid:"optional" json:"ch"`
-	Year      int       `valid:"required" json:"year"`
-	Semester  string    `valid:"optional" json:"semester"`
-	CreatedAt time.Time `valid:"optional" json:"created_at"`
-	UpdatedAt time.Time `valid:"optional" json:"updated_at"`
+	ID         string               `valid:"uuidv4" json:"id"`
+	Name       string               `valid:"required,stringlength(5|150)" json:"name"`
+	License    string               `valid:"required,stringlength(5|50)" json:"license"`
+	Level      string               `valid:"required,stringlength(5|50)" json:"level"`
+	Grade      string               `valid:"required,stringlength(5|50)" json:"grade"`
+	Note       string               `valid:"optional" json:"note"`
+	CH         int                  `valid:"optional" json:"ch"`
+	Year       int                  `valid:"required" json:"year"`
+	Semester   string               `valid:"optional" json:"semester"`
+	Classrooms []ClassroomInterface `valid:"optional" json:"classrooms"`
+	Teacher    TeacherInterface     `valid:"optional" json:"teacher"`
+	CreatedAt  time.Time            `valid:"optional" json:"created_at"`
+	UpdatedAt  time.Time            `valid:"optional" json:"updated_at"`
 }
 
 func NewSubject(name, license, level string) *Subject {
@@ -95,10 +100,27 @@ func (s *Subject) GetSemester() string {
 	return s.Semester
 }
 
+func (s *Subject) GetClassrooms() []ClassroomInterface {
+	return s.Classrooms
+}
+
+func (s *Subject) GetTeacher() TeacherInterface {
+	return s.Teacher
+}
+
 func (s *Subject) GetCreatedAt() time.Time {
 	return s.CreatedAt
 }
 
 func (s *Subject) GetUpdatedAt() time.Time {
 	return s.UpdatedAt
+}
+
+func (s *Subject) AttachClassroom(classroom Classroom) error {
+	if s.Classrooms == nil {
+		s.Classrooms = []ClassroomInterface{&classroom}
+		return nil
+	}
+	s.Classrooms = append(s.Classrooms, &classroom)
+	return nil
 }

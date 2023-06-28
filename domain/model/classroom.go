@@ -21,6 +21,8 @@ type ClassroomInterface interface {
 	GetUpdatedAt() time.Time
 	GetStatus() bool
 	GetStudents() []StudentInterface
+	GetTeachers() []TeacherInterface
+	GetSubjects() []SubjectInterface
 	Enable() error
 	Disable() error
 }
@@ -36,6 +38,8 @@ type Classroom struct {
 	Year        string             `valid:"required" json:"year"`
 	Status      bool               `valid:"optional" json:"status"`
 	Students    []StudentInterface `valid:"optional" json:"students"`
+	Teachers    []TeacherInterface `valid:"optional" json:"teachers"`
+	Subjects    []SubjectInterface `valid:"optional" json:"subjects"`
 	CreatedAt   time.Time          `valid:"optional" json:"created_at"`
 	UpdatedAt   time.Time          `valid:"optional" json:"updated_at"`
 }
@@ -109,6 +113,14 @@ func (c *Classroom) GetStatus() bool {
 
 func (c *Classroom) GetStudents() []StudentInterface {
 	return c.Students
+}
+
+func (c *Classroom) GetTeachers() []TeacherInterface {
+	return c.Teachers
+}
+
+func (c *Classroom) GetSubjects() []SubjectInterface {
+	return c.Subjects
 }
 
 func (c *Classroom) Enable() error {
