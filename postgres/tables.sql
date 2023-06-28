@@ -105,3 +105,14 @@ CREATE TABLE IF NOT EXISTS subjects (
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS classrooms_subjects_teachers (
+	id SERIAL PRIMARY KEY,
+	classroom_id uuid REFERENCES classrooms (id) ON UPDATE CASCADE ON DELETE SET NULL,
+	subject_id uuid REFERENCES subjects (id) ON UPDATE CASCADE ON DELETE SET NULL,
+	teacher_id uuid REFERENCES teachers (id) ON UPDATE CASCADE ON DELETE SET NULL,
+	wch INTEGER NULL,
+	slug VARCHAR NOT NULL,
+	start_course TIMESTAMP NULL,
+	end_course TIMESTAMP NULL
+);

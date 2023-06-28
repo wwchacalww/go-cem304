@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"log"
+	"time"
 	"wwchacalww/go-cem304/domain/model"
 	"wwchacalww/go-cem304/domain/repository"
 )
@@ -72,6 +73,63 @@ func (t *TeacherDB) Create(input repository.TeacherInput) (model.TeacherInterfac
 }
 
 func (t *TeacherDB) FindById(id string) (model.TeacherInterface, error) {
+	var classrooms []model.ClassroomInterface
+	var subjects []model.SubjectInterface
+	// Verificar se o professor está enturmado e com disciplina
+	count := 0
+	rows, err := t.db.Query(`
+	SELECT 
+		classroom_id, c.name, c.level, c.grade, c.shift, c.description, c.ANNE, c.year, c.status, c.created_at, c.updated_at,
+		subject_id, slug,	s.license,	s.level, s.grade,	s.note,	wch,	s.year,	s.semester, s.created_at, s.updated_at 
+	from classrooms_subjects_teachers cst 
+		LEFT JOIN teachers t ON t.id = cst.teacher_id
+		LEFT JOIN subjects s ON s.id = cst.subject_id
+		LEFT JOIN classrooms c ON c.id = cst.classroom_id
+	WHERE cst.teacher_id=$1
+	`, id)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var classroom model.Classroom
+		var subject model.Subject
+		var ipSubject struct {
+			Note     sql.NullString
+			CH       sql.NullInt32
+			Semester sql.NullString
+		}
+		err := rows.Scan(
+			&classroom.ID,
+			&classroom.Name,
+			&classroom.Level,
+			&classroom.Grade,
+			&classroom.Shift,
+			&classroom.Description,
+			&classroom.ANNE,
+			&classroom.Year,
+			&classroom.Status,
+			&classroom.CreatedAt,
+			&classroom.UpdatedAt,
+			&subject.ID,
+			&subject.Name,
+			&subject.License,
+			&subject.Level,
+			&subject.Grade,
+			&ipSubject.Note,
+			&ipSubject.CH,
+			&subject.Year,
+			&ipSubject.Semester,
+			&subject.CreatedAt,
+			&subject.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		classrooms = append(classrooms, &classroom)
+		subjects = append(subjects, &subject)
+		count = count + 1
+	}
+	rows.Close()
 	var teacher model.Teacher
 	var ip struct {
 		CPF      sql.NullString
@@ -113,6 +171,10 @@ func (t *TeacherDB) FindById(id string) (model.TeacherInterface, error) {
 	teacher.Email = ip.Email.String
 	teacher.Note = ip.Note.String
 
+	if count > 0 {
+		teacher.Classrooms = classrooms
+		teacher.Subjects = subjects
+	}
 	stmt.Close()
 
 	return &teacher, nil
@@ -212,6 +274,17 @@ func (t *TeacherDB) FindByName(name string) ([]model.TeacherInterface, error) {
 	}
 
 	return teachers, nil
+}
+
+func (t *TeacherDB) AttachClassroomSubject(id, classroom_id, subject_id, slug string, wch int32, start_course, end_course time.Time) error {
+	_, err := t.db.Exec("INSERT INTO classrooms_subjects_teachers ( classroom_id, subject_id, teacher_id, wch, slug, start_course, end_course) values ($1, $2, $3, $4, $5, $6, $7)",
+		classroom_id, subject_id, id, wch, slug, start_course, end_course,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (t *TeacherDB) Save(teacher model.TeacherInterface) error {

@@ -55,15 +55,18 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [X] Check Students on Classrooms in mass
  - [ ] Create Teacher handler server
    - [X] Register Teacher
+   - [X] Attach Classroom and Subject
    - [X] Get by id teacher
+     - [X] List subjects e classrooms
    - [X] Get by name teacher
    - [X] Get by cpf teacher
+     - [ ] List subjects e classrooms
    - [ ] Update Teacher
-- [X] Create Subjects handler server
- - [X] Register Subjects
- - [X] Get by id Subjects
- - [X] List by Licenses
- - [X] Get by name Subjects
+ - [X] Create Subjects handler server
+   - [X] Register Subjects
+   - [X] Get by id Subjects
+   - [X] List by Licenses
+   - [X] Get by name Subjects
 
 ## Domains - Users
  - [X] Create entity
@@ -103,17 +106,28 @@ Repository for studying and practicing GOLANG applied in a school management sys
 
 ## Domains - Teacher
  - [X] Create entity
+   - [X] Classroom relationship
+   - [X] Subject relationship
  - [X] Test entity classroom
  - [X] Create repository Teacher
  - [ ] Create persistence db and test
+   - [ ] Classroom relationship
+   - [ ] Subject relationship
  - [X] Create table on postgresql
-
+   - [X] Classroom relationship
+   - [X] Subject relationship
 ## Domains - Subjects
  - [X] Create entity
+   - [X] Classroom relationship
+   - [X] Teacher realationship
  - [X] Test entity classroom
  - [X] Create repository Subject
  - [ ] Create persistence db and test
+   - [ ] Classroom relationship
+   - [ ] Teacher realationship
  - [X] Create table on postgresql
+   - [X] Classroom relationship
+   - [X] Teacher realationship
 
 ## PDF report generator
  - [X] Create a function for generator PDF

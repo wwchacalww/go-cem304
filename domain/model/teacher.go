@@ -23,25 +23,31 @@ type TeacherInterface interface {
 	GetLicense() string
 	GetNote() string
 	GetStatus() bool
+	GetClassrooms() []ClassroomInterface
+	GetSubjects() []SubjectInterface
 	GetCreatedAt() time.Time
 	GetUpdatedAt() time.Time
+	AttachSubject(subject Subject) error
+	AttachClassroom(classroom Classroom) error
 	Save(email, bd, gender, fones, license, note string) error
 }
 
 type Teacher struct {
-	ID        string    `valid:"uuidv4" json:"id"`
-	Name      string    `valid:"required,stringlength(5|150)" json:"name"`
-	Nick      string    `valid:"required,stringlength(5|50)" json:"nick"`
-	BirthDay  time.Time `valid:"optional" json:"birth_day"`
-	Gender    string    `valid:"optional" json:"gender"`
-	CPF       string    `valid:"optional" json:"cpf"`
-	Fones     string    `valid:"optional" json:"fones"`
-	Email     string    `valid:"email,optional" json:"email"`
-	License   string    `valid:"optional" json:"license"`
-	Note      string    `valid:"optional" json:"note"`
-	Status    bool      `valid:"optional" json:"status"`
-	CreatedAt time.Time `valid:"optional" json:"created_at"`
-	UpdatedAt time.Time `valid:"optional" json:"updated_at"`
+	ID         string               `valid:"uuidv4" json:"id"`
+	Name       string               `valid:"required,stringlength(5|150)" json:"name"`
+	Nick       string               `valid:"required,stringlength(5|50)" json:"nick"`
+	BirthDay   time.Time            `valid:"optional" json:"birth_day"`
+	Gender     string               `valid:"optional" json:"gender"`
+	CPF        string               `valid:"optional" json:"cpf"`
+	Fones      string               `valid:"optional" json:"fones"`
+	Email      string               `valid:"email,optional" json:"email"`
+	License    string               `valid:"optional" json:"license"`
+	Note       string               `valid:"optional" json:"note"`
+	Status     bool                 `valid:"optional" json:"status"`
+	Classrooms []ClassroomInterface `valid:"optional" json:"classrooms"`
+	Subjects   []SubjectInterface   `valid:"optional" json:"subjects"`
+	CreatedAt  time.Time            `valid:"optional" json:"created_at"`
+	UpdatedAt  time.Time            `valid:"optional" json:"updated_at"`
 }
 
 func NewTeacher(name, nick, cpf, license string) *Teacher {
@@ -111,12 +117,38 @@ func (t *Teacher) GetStatus() bool {
 	return t.Status
 }
 
+func (t *Teacher) GetClassrooms() []ClassroomInterface {
+	return t.Classrooms
+}
+
+func (t *Teacher) GetSubjects() []SubjectInterface {
+	return t.Subjects
+}
+
 func (t *Teacher) GetCreatedAt() time.Time {
 	return t.CreatedAt
 }
 
 func (t *Teacher) GetUpdatedAt() time.Time {
 	return t.UpdatedAt
+}
+
+func (t *Teacher) AttachClassroom(classroom Classroom) error {
+	if t.Classrooms == nil {
+		t.Classrooms = []ClassroomInterface{&classroom}
+		return nil
+	}
+	t.Classrooms = append(t.Classrooms, &classroom)
+	return nil
+}
+
+func (t *Teacher) AttachSubject(subject Subject) error {
+	if t.Subjects == nil {
+		t.Subjects = []SubjectInterface{&subject}
+		return nil
+	}
+	t.Subjects = append(t.Subjects, &subject)
+	return nil
 }
 
 func (t *Teacher) Save(email, bd, gender, fones, license, note string) error {
