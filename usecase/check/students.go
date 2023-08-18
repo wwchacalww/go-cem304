@@ -68,9 +68,15 @@ func CheckStudentsInClass(list []utils.InputCheckStudentInClass, classroom_id st
 
 func CheckAllStudentsAndClass(list []utils.InputCheckStudentInClass, classrooms []model.ClassroomInterface) ([]utils.CheckResult, error) {
 	var result []utils.CheckResult
+	var newList []utils.InputCheckStudentInClass
+
 	for _, clr := range classrooms {
 		class := clr.GetName()[0:1] + clr.GetName()[8:9]
 		for _, code := range clr.GetStudents() {
+			var std utils.InputCheckStudentInClass
+			std.ClassroomID = class
+			std.Educar = code.GetEducar()
+			newList = append(newList, std)
 			rec, err := utils.CheckStudentInClassrooms(list, code.GetEducar(), class)
 			if err != nil {
 				return result, err
@@ -78,6 +84,20 @@ func CheckAllStudentsAndClass(list []utils.InputCheckStudentInClass, classrooms 
 			if !rec.Result {
 				result = append(result, rec)
 			}
+		}
+	}
+
+	log.Println("Reg CSV", len(list))
+	log.Println("Reg Classrooms", len(newList))
+
+	for _, cls := range list {
+		rec, err := utils.CheckStudentInClassrooms(newList, cls.Educar, cls.ClassroomID)
+		if err != nil {
+			return result, err
+		}
+		if !rec.Result {
+			rec.Message = rec.Message + " aluno novo"
+			result = append(result, rec)
 		}
 	}
 

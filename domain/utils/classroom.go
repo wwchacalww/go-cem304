@@ -61,6 +61,21 @@ func FindClassById(classrooms []model.Classroom, classroom_id string) (model.Cla
 	return model.Classroom{}, fmt.Errorf("Classroom not found")
 }
 
+func FindClassBySlug(classrooms []model.ClassroomInterface, slug string) (model.ClassroomInterface, error) {
+	if len(slug) != 2 {
+		return nil, fmt.Errorf("Classroom name invalid")
+	}
+
+	afternoon := string(slug[0]) + "º ano " + string(slug[1]) + " - Vespertino"
+	morning := string(slug[0]) + "º ano " + string(slug[1]) + " - Matutino"
+	for _, class := range classrooms {
+		if class.GetName() == morning || class.GetName() == afternoon {
+			return class, nil
+		}
+	}
+	return nil, fmt.Errorf("Classroom not found. " + afternoon + " and " + morning)
+}
+
 func CheckStudentInClassrooms(list []InputCheckStudentInClass, ieducar int64, classroom_id string) (CheckResult, error) {
 	var result CheckResult
 	if len(list) == 0 {

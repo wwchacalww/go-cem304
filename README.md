@@ -50,17 +50,20 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [ ] Update ANNE Students
    - [ ] Activate Students
    - [ ] Desactivate Students
-   - [X] Import file csv and registry Classrooms
+   - [X] Import file csv and register Classrooms
    - [X] Change Classroom
    - [X] Check Students on Classrooms in mass
  - [ ] Create Teacher handler server
    - [X] Register Teacher
+   - [ ] Import file csv and register teachers and subjects
+     - [X] Load CSV
+     - [X] Register teachers and subjects
    - [X] Attach Classroom and Subject
    - [X] Get by id teacher
      - [X] List subjects e classrooms
    - [X] Get by name teacher
    - [X] Get by cpf teacher
-     - [ ] List subjects e classrooms
+     - [X] List subjects e classrooms
    - [ ] Update Teacher
  - [X] Create Subjects handler server
    - [X] Register Subjects
@@ -111,8 +114,8 @@ Repository for studying and practicing GOLANG applied in a school management sys
  - [X] Test entity classroom
  - [X] Create repository Teacher
  - [ ] Create persistence db and test
-   - [ ] Classroom relationship
-   - [ ] Subject relationship
+   - [X] Classroom relationship
+   - [X] Subject relationship
  - [X] Create table on postgresql
    - [X] Classroom relationship
    - [X] Subject relationship
@@ -123,8 +126,8 @@ Repository for studying and practicing GOLANG applied in a school management sys
  - [X] Test entity classroom
  - [X] Create repository Subject
  - [ ] Create persistence db and test
-   - [ ] Classroom relationship
-   - [ ] Teacher realationship
+   - [X] Classroom relationship
+   - [X] Teacher realationship
  - [X] Create table on postgresql
    - [X] Classroom relationship
    - [X] Teacher realationship
