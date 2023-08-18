@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 	"wwchacalww/go-cem304/domain/model"
@@ -281,7 +282,8 @@ func (t *TeacherDB) AttachClassroomSubject(id, classroom_id, subject_id, slug st
 		classroom_id, subject_id, id, wch, slug, start_course, end_course,
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf(id + " - " + classroom_id + " - " + subject_id)
+		// return err
 	}
 
 	return nil
@@ -293,6 +295,123 @@ func (t *TeacherDB) Save(teacher model.TeacherInterface) error {
 	)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (t *TeacherDB) Classrooms(year string) ([]model.ClassroomInterface, error) {
+	var classrooms []model.ClassroomInterface
+	rows, err := t.db.Query("SELECT id, name, level, grade, shift, description, ANNE, year, status, created_at, updated_at from classrooms where year like $1 ORDER BY name ASC", year)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var class model.Classroom
+		err = rows.Scan(
+			&class.ID,
+			&class.Name,
+			&class.Level,
+			&class.Grade,
+			&class.Shift,
+			&class.Description,
+			&class.ANNE,
+			&class.Year,
+			&class.Status,
+			&class.CreatedAt,
+			&class.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		classrooms = append(classrooms, &class)
+	}
+	return classrooms, nil
+}
+
+func (t *TeacherDB) Import(subjects []model.Subject) error {
+	var query = "INSERT INTO teachers (id, name, nick, cpf, license ) values "
+	var querySBJ = "INSERT INTO subjects (id, name, license, level, grade, ch, year) values "
+	type llUnique struct {
+		ID   string
+		Slug string
+	}
+	var cpfs []string
+	var levelAndLicences []llUnique
+	for i, sbj := range subjects {
+		var checkCPF = true
+		ll := llUnique{
+			ID:   sbj.ID,
+			Slug: sbj.Level + sbj.Name,
+		}
+		for _, cpf := range cpfs {
+			if cpf == sbj.Teacher.GetCPF() {
+				checkCPF = false
+				break
+			}
+		}
+
+		if checkCPF {
+			cpfs = append(cpfs, sbj.Teacher.GetCPF())
+			if i != 0 {
+				query = query + ", ('" + sbj.Teacher.GetID() + "',"
+			} else {
+				query = query + " ('" + sbj.Teacher.GetID() + "',"
+			}
+			query = query + "'" + sbj.Teacher.GetName() + "',"
+			query = query + "'" + sbj.Teacher.GetNick() + "',"
+			query = query + "'" + sbj.Teacher.GetCPF() + "',"
+			query = query + "'" + sbj.GetLicense() + "') "
+		}
+
+		var checkll = true
+		for _, ln := range levelAndLicences {
+			if ln.Slug == ll.Slug {
+				checkll = false
+				break
+			}
+		}
+
+		if checkll {
+			levelAndLicences = append(levelAndLicences, ll)
+			if i == 0 {
+				querySBJ = querySBJ + " ('" + sbj.GetID() + "',"
+			} else {
+				querySBJ = querySBJ + ", ('" + sbj.GetID() + "',"
+			}
+			querySBJ = querySBJ + "'" + sbj.GetName() + "',"
+			querySBJ = querySBJ + "'" + sbj.GetLicense() + "',"
+			querySBJ = querySBJ + "'" + sbj.GetLevel() + "',"
+			querySBJ = querySBJ + "'" + sbj.GetGrade() + "',"
+			querySBJ = querySBJ + "20,"
+			querySBJ = querySBJ + "'2023') "
+		}
+	}
+
+	_, err := t.db.Exec(query + ";" + querySBJ)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	for _, sbj := range subjects {
+		for _, cls := range sbj.Classrooms {
+			var subject_id string
+			for _, ll := range levelAndLicences {
+				if ll.Slug == sbj.Level+sbj.Name {
+					subject_id = ll.ID
+				}
+			}
+			slug := string(cls.GetName()[0]) + string(cls.GetName()[8]) + "-" + sbj.GetName()
+			log.Println(slug)
+			err := t.AttachClassroomSubject(sbj.Teacher.GetID(), cls.GetID(), subject_id, slug, int32(sbj.CH), time.Date(2023, 02, 13, 0, 0, 0, 0, time.Local), time.Date(2023, 12, 23, 0, 0, 0, 0, time.Local))
+			if err != nil {
+				log.Println(err.Error())
+				log.Println(sbj.Teacher.GetName(), cls.GetName(), sbj.GetName())
+			}
+		}
 	}
 
 	return nil

@@ -22,7 +22,7 @@ type SubjectInterface interface {
 	GetTeacher() TeacherInterface
 	GetCreatedAt() time.Time
 	GetUpdatedAt() time.Time
-	AttachClassroom(classroom Classroom) error
+	AttachClassroom(classroom ClassroomInterface) error
 }
 
 type Subject struct {
@@ -116,11 +116,20 @@ func (s *Subject) GetUpdatedAt() time.Time {
 	return s.UpdatedAt
 }
 
-func (s *Subject) AttachClassroom(classroom Classroom) error {
+func (s *Subject) AttachClassroom(classroom ClassroomInterface) error {
 	if s.Classrooms == nil {
-		s.Classrooms = []ClassroomInterface{&classroom}
+		s.Classrooms = []ClassroomInterface{classroom}
 		return nil
 	}
-	s.Classrooms = append(s.Classrooms, &classroom)
+	check := false
+	for _, c := range s.Classrooms {
+		if c.GetID() == classroom.GetID() {
+			check = true
+			break
+		}
+	}
+	if !check {
+		s.Classrooms = append(s.Classrooms, classroom)
+	}
 	return nil
 }

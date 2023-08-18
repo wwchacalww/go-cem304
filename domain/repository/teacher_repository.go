@@ -24,6 +24,8 @@ type TeacherRepositoryInterface interface {
 	FindByName(name string) ([]model.TeacherInterface, error)
 	AttachClassroomSubject(id, classroom_id, subject_id, slug, start_course, end_course string, wch int32) (model.TeacherInterface, error)
 	Save(id string, input TeacherInput) (model.TeacherInterface, error)
+	Classrooms(year string) ([]model.ClassroomInterface, error)
+	Import(subjects []model.Subject) error
 }
 
 type TeacherPersistence interface {
@@ -33,4 +35,6 @@ type TeacherPersistence interface {
 	FindByCPF(cpf string) (model.TeacherInterface, error)
 	AttachClassroomSubject(id, classroom_id, subject_id, slug string, wch int32, start_course, end_course time.Time) error
 	Save(teacher model.TeacherInterface) error
+	Classrooms(year string) ([]model.ClassroomInterface, error)
+	Import(subjects []model.Subject) error
 }

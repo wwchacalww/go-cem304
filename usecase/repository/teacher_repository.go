@@ -94,3 +94,17 @@ func (repo *TeacherRepository) Save(id string, input repository.TeacherInput) (m
 	}
 	return teacher, nil
 }
+
+func (repo *TeacherRepository) Classrooms(year string) ([]model.ClassroomInterface, error) {
+	result, err := repo.Persistence.Classrooms(year)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (repo *TeacherRepository) Import(subjects []model.Subject) error {
+	err := repo.Persistence.Import(subjects)
+	return err
+}
