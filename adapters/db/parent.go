@@ -27,7 +27,7 @@ func (p *ParentDB) Create(input repository.ParentInput) (model.ParentInterface, 
 		return nil, err
 	}
 
-	stmt, err := p.db.Prepare(`INSERT INTO p (
+	stmt, err := p.db.Prepare(`INSERT INTO parents (
 		id,
 		name,
 		cpf,

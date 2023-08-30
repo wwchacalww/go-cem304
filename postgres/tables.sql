@@ -116,3 +116,14 @@ CREATE TABLE IF NOT EXISTS classrooms_subjects_teachers (
 	start_course TIMESTAMP NULL,
 	end_course TIMESTAMP NULL
 );
+
+CREATE TABLE IF NOT EXISTS evaluations (
+	id SERIAL PRIMARY KEY,
+	student_id uuid REFERENCES students (id) ON UPDATE CASCADE ON DELETE SET NULL,
+	classroom_subject_teacher_id INT REFERENCES  classrooms_subjects_teachers (id) ON UPDATE CASCADE ON DELETE SET NULL,
+	term VARCHAR NOT NULL,
+	note VARCHAR NOT NULL,
+	absences INT NOT NULL,
+	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);

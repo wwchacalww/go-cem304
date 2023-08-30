@@ -11,13 +11,14 @@ import (
 )
 
 type WebServer struct {
-	AuthRepository      repository.AuthRepositoryInterface
-	UserRepository      repository.UserRepositoryInterface
-	ClassroomRepository repository.ClassroomRepositoryInterface
-	StudentRepository   repository.StudentRepositoryInterface
-	ParentRepository    repository.ParentRepositoryInterface
-	TeacherRepository   repository.TeacherRepositoryInterface
-	SubjectRepository   repository.SubjectRepositoryInterface
+	AuthRepository       repository.AuthRepositoryInterface
+	UserRepository       repository.UserRepositoryInterface
+	ClassroomRepository  repository.ClassroomRepositoryInterface
+	StudentRepository    repository.StudentRepositoryInterface
+	ParentRepository     repository.ParentRepositoryInterface
+	TeacherRepository    repository.TeacherRepositoryInterface
+	SubjectRepository    repository.SubjectRepositoryInterface
+	EvaluationRepository repository.EvaluationRepositoryInterface
 }
 
 func MakeNewWebServer() *WebServer {
@@ -45,6 +46,7 @@ func (w WebServer) Server() {
 	handler.MakeParentHandler(r, w.ParentRepository)
 	handler.MakeTeacherHandlers(r, w.TeacherRepository)
 	handler.MakeSubjectHandlers(r, w.SubjectRepository)
+	handler.MakeEvaluationHandlers(r, w.EvaluationRepository)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World!"))
