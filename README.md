@@ -70,6 +70,12 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [X] Get by id Subjects
    - [X] List by Licenses
    - [X] Get by name Subjects
+ - [ ] Create Evaluation handler server
+   - [X] Register evaluation
+   - [ ] Get student's evaluations
+   - [X] Update student's evaluations
+   - [X] Import evaluations report
+   - [ ] List of report cards in PDF
 
 ## Domains - Users
  - [X] Create entity
@@ -122,16 +128,27 @@ Repository for studying and practicing GOLANG applied in a school management sys
 ## Domains - Subjects
  - [X] Create entity
    - [X] Classroom relationship
-   - [X] Teacher realationship
+   - [X] Subjects realationship
  - [X] Test entity classroom
  - [X] Create repository Subject
  - [ ] Create persistence db and test
    - [X] Classroom relationship
-   - [X] Teacher realationship
+   - [X] Subjects realationship
  - [X] Create table on postgresql
    - [X] Classroom relationship
-   - [X] Teacher realationship
-
+   - [X] Subjects realationship
+## Domains - Evaluations
+ - [ ] Create entity
+   - [X] Classroom relationship
+   - [X] Evaluation realationship
+ - [X] Test entity evaluation
+ - [X] Create repository Evaluation
+ - [ ] Create persistence db and test
+   - [X] Student relationship
+   - [X] Subject realationship
+ - [X] Create table on postgresql
+   - [x] Student relationship
+   - [x] Subject realationship
 ## PDF report generator
  - [X] Create a function for generator PDF
  - [X] Create student's list in pdf

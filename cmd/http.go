@@ -29,6 +29,7 @@ to quickly create a Cobra application.`,
 		srv.ParentRepository = &parentRepository
 		srv.TeacherRepository = &teacherRepository
 		srv.SubjectRepository = &subjectRepository
+		srv.EvaluationRepository = &evaluationRepository
 		fmt.Println("Webserver running on port 9000 🔥🔥🔥")
 		srv.Server()
 	},
