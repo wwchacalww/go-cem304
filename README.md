@@ -32,6 +32,7 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [X] Login
    - [X] Refreshtoken
    - [X] Authentication and authorization
+   - [X] Check roles can access data
  - [X] Create Classroom handler server
    - [X] Create Classroom
    - [X] Get by id Classroom

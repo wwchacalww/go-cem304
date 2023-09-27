@@ -22,6 +22,7 @@ func MakeUserHandlers(r *chi.Mux, repo repository.UserRepositoryInterface) {
 	handler := &UserHandler{
 		UserRepository: repo,
 	}
+
 	jwtoken := jwtauth.New("HS256", []byte("secret_jwt"), nil)
 
 	r.Group(func(r chi.Router) {

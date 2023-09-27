@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-chi/jwtauth/v5"
@@ -16,4 +17,13 @@ func CreateJWToken(name, email, roles, avartar_url, secret string) (string, erro
 	}
 
 	return tokenString, nil
+}
+
+func CheckRoles(roles []string, role string) error {
+	for _, r := range roles {
+		if r == role {
+			return nil
+		}
+	}
+	return fmt.Errorf("Access denied")
 }
