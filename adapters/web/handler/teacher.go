@@ -2,11 +2,13 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"wwchacalww/go-cem304/domain/repository"
 	"wwchacalww/go-cem304/domain/utils"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/jwtauth/v5"
 )
 
 type TeacherHandler struct {
@@ -17,19 +19,34 @@ func MakeTeacherHandlers(r *chi.Mux, repo repository.TeacherRepositoryInterface)
 	handler := &TeacherHandler{
 		Repo: repo,
 	}
+	jwtoken := jwtauth.New("HS256", []byte("secret_jwt"), nil)
 
-	r.Route("/teachers", func(r chi.Router) {
-		r.Post("/", handler.Store)
-		r.Post("/attach/class/subject", handler.AttachClassSubject)
-		r.Post("/import", handler.ImportTeachers)
-		r.Get("/{id}", handler.GetTeacher)
-		r.Get("/search", handler.FindByName)
+	r.Group(func(r chi.Router) {
+		r.Use(jwtauth.Verifier(jwtoken))
+		r.Use(jwtauth.Authenticator)
+		r.Route("/teachers", func(r chi.Router) {
+			r.Post("/", handler.Store)
+			r.Post("/attach/class/subject", handler.AttachClassSubject)
+			r.Post("/import", handler.ImportTeachers)
+			r.Get("/{id}", handler.GetTeacher)
+			r.Get("/search", handler.FindByName)
+		})
 	})
+
 }
 
 func (t *TeacherHandler) Store(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin", "secretary"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	var input repository.TeacherInput
-	err := json.NewDecoder(r.Body).Decode(&input)
+	err = json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))
@@ -53,6 +70,15 @@ func (t *TeacherHandler) Store(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *TeacherHandler) AttachClassSubject(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin", "secretary"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	var input struct {
 		Id           string `json:"teacher_id"`
 		Classroom_Id string `json:"classroom_id"`
@@ -63,7 +89,7 @@ func (t *TeacherHandler) AttachClassSubject(w http.ResponseWriter, r *http.Reque
 		EndCourse    string `json:"end_course"`
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&input)
+	err = json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))
@@ -87,6 +113,15 @@ func (t *TeacherHandler) AttachClassSubject(w http.ResponseWriter, r *http.Reque
 }
 
 func (t *TeacherHandler) ImportTeachers(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	f, fh, err := r.FormFile("file")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -123,6 +158,15 @@ func (t *TeacherHandler) ImportTeachers(w http.ResponseWriter, r *http.Request) 
 }
 
 func (t *TeacherHandler) GetTeacher(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin", "director", "secretary", "coordinator", "teather"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	id := chi.URLParam(r, "id")
 	teacher, err := t.Repo.FindById(id)
 	if err != nil {
@@ -140,6 +184,15 @@ func (t *TeacherHandler) GetTeacher(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *TeacherHandler) FindByName(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin", "director", "secretary", "coordinator", "teather"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	name := r.URL.Query().Get("name")
 	teachers, err := t.Repo.FindByName(name)
 	if err != nil {

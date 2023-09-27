@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 	reportpdf "wwchacalww/go-cem304/usecase/report-pdf"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/jwtauth/v5"
 )
 
 type StudentHandler struct {
@@ -25,28 +27,43 @@ func MakeStudentHandlers(r *chi.Mux, repo repository.StudentRepositoryInterface)
 		Repo: repo,
 	}
 
-	r.Route("/students", func(r chi.Router) {
-		r.Post("/", handler.Store)
-		r.Post("/import", handler.Import)
-		r.Post("/import/report", handler.ImportReport)
-		r.Get("/{id}", handler.GetStudent)
-		r.Get("/educar/{id}", handler.FindByEducar)
-		r.Get("/search", handler.FindByName)
-		r.Get("/list", handler.List)
-		r.Put("/change", handler.ChangeClassroom)
-		r.Put("/checkclass", handler.CheckStudentsInClass)
-		r.Post("/statement/schooling", handler.StatementSchooling)
-		r.Put("/check/list", handler.CheckStudentsList)
-		r.Put("/update/list/educadf", handler.UpdateEducaDFList)
-		// r.Patch("/enable/{id}", handler.Enable)
-		// r.Patch("/disable/{id}", handler.Disable)
-		// r.Patch("/anne", handler.ANNE)
+	jwtoken := jwtauth.New("HS256", []byte("secret_jwt"), nil)
+
+	r.Group(func(r chi.Router) {
+		r.Use(jwtauth.Verifier(jwtoken))
+		r.Use(jwtauth.Authenticator)
+		r.Route("/students", func(r chi.Router) {
+			r.Post("/", handler.Store)
+			r.Post("/import", handler.Import)
+			r.Post("/import/report", handler.ImportReport)
+			r.Get("/{id}", handler.GetStudent)
+			r.Get("/educar/{id}", handler.FindByEducar)
+			r.Get("/search", handler.FindByName)
+			r.Get("/list", handler.List)
+			r.Put("/change", handler.ChangeClassroom)
+			r.Put("/checkclass", handler.CheckStudentsInClass)
+			r.Post("/statement/schooling", handler.StatementSchooling)
+			r.Put("/check/list", handler.CheckStudentsList)
+			r.Put("/update/list/educadf", handler.UpdateEducaDFList)
+			// r.Patch("/enable/{id}", handler.Enable)
+			// r.Patch("/disable/{id}", handler.Disable)
+			// r.Patch("/anne", handler.ANNE)
+		})
 	})
 }
 
 func (s *StudentHandler) Store(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"secretary", "admin"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	var input repository.StudentInput
-	err := json.NewDecoder(r.Body).Decode(&input)
+	err = json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))
@@ -69,11 +86,20 @@ func (s *StudentHandler) Store(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *StudentHandler) ChangeClassroom(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"secretary", "admin"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	var input struct {
 		ID          string `json:"id"`
 		ClassroomID string `json:"classroom_id"`
 	}
-	err := json.NewDecoder(r.Body).Decode(&input)
+	err = json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(jsonError(err.Error()))
@@ -92,6 +118,15 @@ func (s *StudentHandler) ChangeClassroom(w http.ResponseWriter, r *http.Request)
 }
 
 func (s *StudentHandler) GetStudent(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin", "director", "secretary", "coordinator", "teather"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	id := chi.URLParam(r, "id")
 	student, err := s.Repo.FindById(id)
 	if err != nil {
@@ -109,6 +144,15 @@ func (s *StudentHandler) GetStudent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *StudentHandler) FindByEducar(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin", "director", "secretary", "coordinator"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	id := chi.URLParam(r, "id")
 	log.Println(id)
 	educar, err := strconv.ParseInt(id, 10, 64)
@@ -129,6 +173,15 @@ func (s *StudentHandler) FindByEducar(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *StudentHandler) FindByName(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin", "director", "secretary", "coordinator"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	name := r.URL.Query().Get("name")
 	Students, err := s.Repo.FindByName(strings.ToUpper(name))
 	if err != nil {
@@ -146,6 +199,15 @@ func (s *StudentHandler) FindByName(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *StudentHandler) List(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin", "director", "secretary", "coordinator", "teather"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	classroom_id := r.URL.Query().Get("class")
 	log.Println(classroom_id)
 	Students, err := s.Repo.List(classroom_id)
@@ -164,6 +226,15 @@ func (s *StudentHandler) List(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *StudentHandler) Enable(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin", "secretary"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	id := chi.URLParam(r, "id")
 	class, err := s.Repo.Enable(id)
 	if err != nil {
@@ -181,6 +252,15 @@ func (s *StudentHandler) Enable(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *StudentHandler) Disable(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin", "secretary"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	id := chi.URLParam(r, "id")
 	class, err := s.Repo.Disable(id)
 	if err != nil {
@@ -198,11 +278,20 @@ func (s *StudentHandler) Disable(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *StudentHandler) ANNE(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin", "secretary"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	var input struct {
 		ID   string `json:"id"`
 		ANNE string `json:"ANNE"`
 	}
-	err := json.NewDecoder(r.Body).Decode(&input)
+	err = json.NewDecoder(r.Body).Decode(&input)
 	class, err := s.Repo.ANNE(input.ID, input.ANNE)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -219,6 +308,15 @@ func (s *StudentHandler) ANNE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *StudentHandler) Import(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	f, fh, err := r.FormFile("file")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -256,6 +354,15 @@ func (s *StudentHandler) Import(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *StudentHandler) ImportReport(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	f, fh, err := r.FormFile("file")
 	classroom_id := r.FormValue("classroom_id")
 	if err != nil {
@@ -307,6 +414,15 @@ func (s *StudentHandler) ImportReport(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *StudentHandler) CheckStudentsInClass(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	f, fh, err := r.FormFile("file")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -351,11 +467,20 @@ func (s *StudentHandler) CheckStudentsInClass(w http.ResponseWriter, r *http.Req
 }
 
 func (s *StudentHandler) StatementSchooling(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin", "secretary"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	// id := chi.URLParam(r, "id")
 	// log.Println(id)
 	// educar, err := strconv.ParseInt(id, 10, 64)
 	var input reportpdf.InputSS
-	err := json.NewDecoder(r.Body).Decode(&input)
+	err = json.NewDecoder(r.Body).Decode(&input)
 	student, err := s.Repo.FindByEducar(input.Educar)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -419,6 +544,15 @@ func (s *StudentHandler) StatementSchooling(w http.ResponseWriter, r *http.Reque
 }
 
 func (s *StudentHandler) CheckStudentsList(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	f, fh, err := r.FormFile("file")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -448,6 +582,15 @@ func (s *StudentHandler) CheckStudentsList(w http.ResponseWriter, r *http.Reques
 }
 
 func (s *StudentHandler) UpdateEducaDFList(w http.ResponseWriter, r *http.Request) {
+	token, _, _ := jwtauth.FromContext(r.Context())
+	role, _ := token.Get("role")
+	roles := []string{"admin"}
+	err := utils.CheckRoles(roles, fmt.Sprintf("%v", role))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(jsonError(err.Error()))
+		return
+	}
 	f, fh, err := r.FormFile("file")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
