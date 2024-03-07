@@ -113,6 +113,7 @@ func ReportToStudents(f multipart.File, classroom_id string) ([]repository.Stude
 	for i, l := range data {
 		switch {
 		case i%10 == 0:
+			input = repository.StudentInput{}
 			ieducarStr := strings.Replace(l[0], " ", "", -1)
 			n, err := strconv.ParseInt(ieducarStr, 10, 64)
 			if err != nil {

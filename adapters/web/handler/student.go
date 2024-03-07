@@ -28,6 +28,11 @@ func MakeStudentHandlers(r *chi.Mux, repo repository.StudentRepositoryInterface)
 	}
 
 	jwtoken := jwtauth.New("HS256", []byte("secret_jwt"), nil)
+	r.Group(func(r chi.Router) {
+		r.Route("/student", func(r chi.Router) {
+			r.Get("/student-transcript", handler.StudentTranscript)
+		})
+	})
 
 	r.Group(func(r chi.Router) {
 		r.Use(jwtauth.Verifier(jwtoken))
@@ -40,6 +45,7 @@ func MakeStudentHandlers(r *chi.Mux, repo repository.StudentRepositoryInterface)
 			r.Get("/educar/{id}", handler.FindByEducar)
 			r.Get("/search", handler.FindByName)
 			r.Get("/list", handler.List)
+			r.Get("/carro", handler.StudentTranscript)
 			r.Put("/change", handler.ChangeClassroom)
 			r.Put("/checkclass", handler.CheckStudentsInClass)
 			r.Post("/statement/schooling", handler.StatementSchooling)
@@ -464,6 +470,26 @@ func (s *StudentHandler) CheckStudentsInClass(w http.ResponseWriter, r *http.Req
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (s *StudentHandler) StudentTranscript(w http.ResponseWriter, r *http.Request) {
+	err := reportpdf.StudentTranscript()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(jsonError(err.Error()))
+		return
+	}
+
+	fileD, err := os.Open("pdf/student-transcript.pdf")
+	if err != nil {
+		log.Panic(err)
+	}
+	file_bytes, err := ioutil.ReadAll(fileD)
+	if err != nil {
+		log.Panic(err)
+	}
+	w.Header().Add("content-type", "application/pdf")
+	w.Write(file_bytes)
 }
 
 func (s *StudentHandler) StatementSchooling(w http.ResponseWriter, r *http.Request) {
