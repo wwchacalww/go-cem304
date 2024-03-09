@@ -77,6 +77,11 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [X] Update student's evaluations
    - [X] Import evaluations report
    - [ ] List of report cards in PDF
+ - [ ] Register Transcripts of Students
+   - [ ] Tool for load csv with student's transcripts
+   - [ ] Create Handle for transcripts
+     - [ ] AddMass transcripts
+     - [ ] PDF Student's Transcript
 
 ## Domains - Users
  - [X] Create entity
@@ -139,7 +144,7 @@ Repository for studying and practicing GOLANG applied in a school management sys
    - [X] Classroom relationship
    - [X] Subjects realationship
 ## Domains - Evaluations
- - [ ] Create entity
+ - [X] Create entity
    - [X] Classroom relationship
    - [X] Evaluation realationship
  - [X] Test entity evaluation
@@ -150,6 +155,15 @@ Repository for studying and practicing GOLANG applied in a school management sys
  - [X] Create table on postgresql
    - [x] Student relationship
    - [x] Subject realationship
+
+## Domains - Transcript
+ - [X] Create Entity
+   - [X] Student realationship
+ - [X] Test entity transcript
+ - [X] Create repository Transcript
+ - [X] Create persistence db and test
+ - [X] Create table on postgresql
+
 ## PDF report generator
  - [X] Create a function for generator PDF
  - [X] Create student's list in pdf
